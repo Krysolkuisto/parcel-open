@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+dist/
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+
+# Xcode (apps, coming next)
+xcuserdata/
+DerivedData/
+.build/
+*.xcodeproj/project.xcworkspace/xcuserdata/
