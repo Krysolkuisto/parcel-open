@@ -42,6 +42,9 @@ export function detectCarrier(rawNumber: string): DetectedCarrier | null {
   if (/^TBA\d{12}$/.test(n)) return amazon;
   if (/^9[2-5]\d{18,22}$/.test(n)) return usps;
 
+  if (/^0034\d{16}$/.test(n)) return { code: 'dhl-paket', name: 'DHL Paket' };
+  if (/^(GM|LX|RX)\d{10,18}$/.test(n)) return { code: 'dhl-ecommerce', name: 'DHL eCommerce' };
+
   const s10 = /^[A-Z]{2}\d{9}([A-Z]{2})$/.exec(n);
   if (s10) return POSTAL_OPERATORS[s10[1]!] ?? null;
 
@@ -58,6 +61,12 @@ export function detectCarrier(rawNumber: string): DetectedCarrier | null {
 }
 
 const ACRONYMS = new Set(['dhl', 'dpd', 'gls', 'tnt', 'ups', 'usps', 'ems', 'uk', 'us']);
+
+/** Shapes the DHL tracking API accepts (Paket, Express, eCommerce). */
+export function isDhlNumber(rawNumber: string): boolean {
+  const n = rawNumber.replace(/[\s-]+/g, '').toUpperCase();
+  return detectCarrier(n)?.code.startsWith('dhl') === true || /^(\d{10}|\d{20}|JJD\d+|JVGL\d+)$/.test(n);
+}
 
 /** Human-friendly name for a provider carrier slug (AfterShip uses slugs such as "usps"). */
 export function carrierDisplayName(slug: string): string {

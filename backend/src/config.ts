@@ -5,6 +5,7 @@ export interface Config {
   apiToken: string;
   track17Key: string | null;
   aftershipKey: string | null;
+  dhlKey: string | null;
   aftershipWebhookSecret: string | null;
   /** Provider names in priority order. */
   providers: string[];
@@ -25,6 +26,7 @@ function num(value: string | undefined, fallback: number): number {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const track17Key = env.TRACK17_API_KEY?.trim() || null;
   const aftershipKey = env.AFTERSHIP_API_KEY?.trim() || null;
+  const dhlKey = env.DHL_API_KEY?.trim() || null;
 
   let providers = (env.PROVIDERS ?? '')
     .split(',')
@@ -33,6 +35,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (providers.length === 0) {
     if (track17Key) providers.push('17track');
     if (aftershipKey) providers.push('aftership');
+    if (dhlKey) providers.push('dhl');
     if (providers.length === 0) providers = ['mock'];
   }
 
@@ -48,6 +51,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     apiToken,
     track17Key,
     aftershipKey,
+    dhlKey,
     aftershipWebhookSecret: env.AFTERSHIP_WEBHOOK_SECRET?.trim() || null,
     providers,
     pollIntervalMinutes: num(env.POLL_INTERVAL_MINUTES, 30),

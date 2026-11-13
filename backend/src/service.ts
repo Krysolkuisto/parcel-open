@@ -164,12 +164,18 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       description: input.description?.trim() || null,
       carrierCode: input.carrierCode?.trim() || null,
       postalCode: input.postalCode?.trim() || null,
-      provider: this.providers[0]!.name,
+      provider: (this.providers.find((p) => p.canTrack?.(trackingNumber) ?? true) ?? this.providers[0]!).name,
     });
     if (guessed) this.store.update(row.id, { carrier_name: guessed.name });
 
+    const candidates = this.providers.filter((p) => p.canTrack?.(trackingNumber) ?? true);
+    if (candidates.length === 0) {
+      this.store.delete(row.id);
+      throw new HttpError(422, 'No configured tracking provider can track this number. Add a provider key for its carrier.');
+    }
+
     const errors: ProviderError[] = [];
-    for (const provider of this.providers) {
+    for (const provider of candidates) {
       try {
         const result = await provider.register({
           trackingNumber,
@@ -279,8 +285,17 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
     return row;
   }
 
+  /** The package's own provider if still configured, else the first one able to handle its number. */
+  private pickProvider(row: PackageRow): TrackingProvider {
+    return (
+      this.providerByName(row.provider) ??
+      this.providers.find((p) => p.canTrack?.(row.tracking_number) ?? true) ??
+      this.providers[0]!
+    );
+  }
+
   private async refreshRow(row: PackageRow): Promise<void> {
-    const provider = this.providerByName(row.provider) ?? this.providers[0]!;
+    const provider = this.pickProvider(row);
     try {
       const result = await provider.refresh({
         trackingNumber: row.tracking_number,

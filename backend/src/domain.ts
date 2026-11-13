@@ -60,6 +60,8 @@ export interface TrackingProvider {
   readonly name: string;
   /** Whether this provider understands the given carrier code (otherwise auto-detection is used). */
   acceptsCarrier(code: string): boolean;
+  /** Whether this provider can handle the number at all (e.g. a carrier-specific API). Defaults to true. */
+  canTrack?(trackingNumber: string): boolean;
   /** Start tracking a number and return the first known state. */
   register(input: TrackInput): Promise<TrackingResult>;
   /** Fetch the latest state of an already registered number. */

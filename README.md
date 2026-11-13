@@ -10,20 +10,21 @@ Paste a tracking number and the carrier is detected automatically. Active delive
 
 | Folder | What | Status |
 | --- | --- | --- |
-| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 44 tests |
+| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 55 tests |
 | [`app/`](app) | SwiftUI app for macOS and iOS, shared `ParcelKit` package, WidgetKit widget | macOS app working, 10 tests; iOS and widget need Xcode |
 
 ## How carrier coverage works
 
-No free open-source library covers every carrier: carrier sites change often, and scraping them one by one breaks. Parcel Open instead plugs into tracking aggregators through interchangeable **providers**:
+No free open-source library covers every carrier: carrier sites change often, and scraping them one by one breaks. Parcel Open plugs into tracking sources through interchangeable **providers**, tried in priority order. A provider that cannot handle a number (for example the DHL provider on a UPS number) is skipped.
 
-| Provider | Coverage (vendor claim) | Notes |
-| --- | --- | --- |
-| [17TRACK](https://api.17track.net/en/doc) | 2,900+ carriers | API key required, small free quota |
-| [AfterShip](https://www.aftership.com/docs/tracking) | 1,000+ carriers | API key required |
-| `mock` | fake data | no key needed, for development |
+| Provider | Coverage | Cost | Notes |
+| --- | --- | --- | --- |
+| `dhl` | DHL Paket, Express, eCommerce | **Free**, 250 calls/day | [Free key](https://developer.dhl.com/api-reference/shipment-tracking): create an app subscribed to *Shipment Tracking - Unified*. Response format checked against DHL's public demo key |
+| [17TRACK](https://api.17track.net/en/doc) | 2,900+ carriers (vendor claim) | Paid; a one-time free allowance of 200 numbers for accounts created in 2026 | Format taken from the documentation, not yet run with a real key |
+| [AfterShip](https://www.aftership.com/docs/tracking) | 1,000+ carriers (vendor claim) | API access is on paid plans | Format taken from the official SDK types, not yet run with a real key |
+| `mock` | fake data | free | No key needed, for development. Packages are flagged **DEMO** in the app |
 
-Providers are tried in priority order. If one refuses a number (unsupported carrier), the next one is used. Adding a provider means implementing one small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)).
+Free universal tracking does not really exist: aggregators with a free API tier cap it at a few parcels a month (for instance Ship24, 10 shipments/month). The free, unlimited route is to use each carrier's own tracking API, one provider per carrier. Adding one means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); see `backend/src/providers/dhl.ts` for a compact example.
 
 Each provider has its own quotas, pricing and terms: check them before relying on one.
 
