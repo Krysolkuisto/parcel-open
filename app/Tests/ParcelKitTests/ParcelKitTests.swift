@@ -146,6 +146,25 @@ struct ParcelKitTests {
         #expect(try await stubbedClient().detectCarrier(number: "ZZZ") == nil)
     }
 
+    @Test func bulkParsingHandlesSeparatorsBlankLinesAndDuplicates() {
+        let text = """
+        1Z14V4W16890664609 Shoes for Anna
+        CP044239925DE,DHL parcel
+
+        6a12345678901;
+        RB123456789TH\tThai order
+        1z14v4w16890664609 duplicate of the first
+          9400111899223452345678
+        """
+        let entries = BulkEntry.parse(text)
+        #expect(entries.map(\.trackingNumber) == ["1Z14V4W16890664609", "CP044239925DE", "6a12345678901", "RB123456789TH", "9400111899223452345678"])
+        #expect(entries[0].label == "Shoes for Anna")
+        #expect(entries[1].label == "DHL parcel")
+        #expect(entries[2].label == nil)
+        #expect(entries[3].label == "Thai order")
+        #expect(BulkEntry.parse("  \n \n").isEmpty)
+    }
+
     @Test func widgetFeedDecodes() async throws {
         let json = #"{"generatedAt":"2026-11-13T10:05:47.448Z","activeCount":1,"outForDeliveryCount":1,"items":[{"id":"a","title":"1st pack","trackingNumber":"X","carrierName":null,"status":"out_for_delivery","statusText":"Out","eta":null}]}"#
         StubProtocol.handler = { _ in (200, Data(json.utf8)) }

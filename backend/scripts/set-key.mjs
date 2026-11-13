@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const ALLOWED = [
   'DHL_API_KEY',
+  'LAPOSTE_API_KEY',
   'UPS_CLIENT_ID',
   'UPS_CLIENT_SECRET',
   'SHIP24_API_KEY',

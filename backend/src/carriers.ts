@@ -147,6 +147,7 @@ export function trackingUrl(rawNumber: string, carrierCode?: string | null): str
 export function setupHint(rawNumber: string): string {
   const code = detectCarrier(rawNumber)?.code ?? '';
   if (code === 'ups') return 'UPS_CLIENT_ID + UPS_CLIENT_SECRET';
+  if (code === 'colissimo' || code === 'la-poste') return 'LAPOSTE_API_KEY';
   if (code.startsWith('dhl') || code.startsWith('deutsche-post')) return 'DHL_API_KEY';
   return 'SHIP24_API_KEY';
 }

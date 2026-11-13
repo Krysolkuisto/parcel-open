@@ -30,6 +30,8 @@ struct ParcelOpenApp: App {
             CommandGroup(after: .newItem) {
                 Button(tr("action.add")) { model.showAdd = true }
                     .keyboardShortcut("n")
+                Button(tr("action.addMany")) { model.showBulkAdd = true }
+                    .keyboardShortcut("n", modifiers: [.command, .shift])
                 Button(tr("action.refresh")) { Task { await model.refresh() } }
                     .keyboardShortcut("r")
             }

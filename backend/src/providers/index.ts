@@ -3,8 +3,10 @@ import type { TrackingProvider } from '../domain.js';
 import { AfterShipProvider } from './aftership.js';
 import { DhlProvider } from './dhl.js';
 import type { FetchLike } from './http.js';
+import { LaPosteProvider } from './laposte.js';
 import { MockProvider } from './mock.js';
 import { Ship24Provider } from './ship24.js';
+import { withMinInterval } from './throttle.js';
 import { Track17Provider } from './track17.js';
 import { UpsProvider } from './ups.js';
 
@@ -19,7 +21,10 @@ export function buildProviders(config: Config, fetchImpl: FetchLike = fetch): Tr
         return new AfterShipProvider(config.aftershipKey, config.aftershipWebhookSecret, fetchImpl);
       case 'dhl':
         if (!config.dhlKey) throw new Error('PROVIDERS includes dhl but DHL_API_KEY is not set');
-        return new DhlProvider(config.dhlKey, fetchImpl);
+        return withMinInterval(new DhlProvider(config.dhlKey, fetchImpl), 1100); // DHL allows 1 call per second
+      case 'laposte':
+        if (!config.laPosteKey) throw new Error('PROVIDERS includes laposte but LAPOSTE_API_KEY is not set');
+        return new LaPosteProvider(config.laPosteKey, fetchImpl);
       case 'ups':
         if (!config.upsClientId || !config.upsClientSecret) {
           throw new Error('PROVIDERS includes ups but UPS_CLIENT_ID / UPS_CLIENT_SECRET are not set');
@@ -31,7 +36,7 @@ export function buildProviders(config: Config, fetchImpl: FetchLike = fetch): Tr
       case 'mock':
         return new MockProvider();
       default:
-        throw new Error(`Unknown provider "${name}" (expected dhl, ups, 17track, aftership, ship24 or mock)`);
+        throw new Error(`Unknown provider "${name}" (expected dhl, ups, laposte, 17track, aftership, ship24 or mock)`);
     }
   });
 }

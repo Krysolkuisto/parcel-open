@@ -23,6 +23,9 @@ struct ContentView: View {
         .sheet(isPresented: $model.showAdd) {
             PackageForm(mode: .add)
         }
+        .sheet(isPresented: $model.showBulkAdd) {
+            BulkAddSheet()
+        }
         .sheet(isPresented: $model.showSettings) {
             ServerSettingsView(onClose: { model.showSettings = false })
         }
@@ -97,6 +100,9 @@ struct PackageList: View {
                 .disabled(model.isRefreshing)
                 Button { model.showAdd = true } label: {
                     Label(tr("action.add"), systemImage: "plus")
+                }
+                Button { model.showBulkAdd = true } label: {
+                    Label(tr("action.addMany"), systemImage: "text.badge.plus")
                 }
                 #if os(iOS)
                 Button { model.showSettings = true } label: {

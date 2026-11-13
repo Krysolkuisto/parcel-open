@@ -7,6 +7,7 @@ export interface Config {
   aftershipKey: string | null;
   dhlKey: string | null;
   ship24Key: string | null;
+  laPosteKey: string | null;
   upsClientId: string | null;
   upsClientSecret: string | null;
   aftershipWebhookSecret: string | null;
@@ -31,6 +32,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const aftershipKey = env.AFTERSHIP_API_KEY?.trim() || null;
   const dhlKey = env.DHL_API_KEY?.trim() || null;
   const ship24Key = env.SHIP24_API_KEY?.trim() || null;
+  const laPosteKey = env.LAPOSTE_API_KEY?.trim() || null;
   const upsClientId = env.UPS_CLIENT_ID?.trim() || null;
   const upsClientSecret = env.UPS_CLIENT_SECRET?.trim() || null;
 
@@ -42,6 +44,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     // Free carrier-specific APIs first so they do not use up an aggregator's quota.
     if (dhlKey) providers.push('dhl');
     if (upsClientId && upsClientSecret) providers.push('ups');
+    if (laPosteKey) providers.push('laposte');
     if (track17Key) providers.push('17track');
     if (aftershipKey) providers.push('aftership');
     if (ship24Key) providers.push('ship24');
@@ -61,6 +64,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     aftershipKey,
     dhlKey,
     ship24Key,
+    laPosteKey,
     upsClientId,
     upsClientSecret,
     aftershipWebhookSecret: env.AFTERSHIP_WEBHOOK_SECRET?.trim() || null,

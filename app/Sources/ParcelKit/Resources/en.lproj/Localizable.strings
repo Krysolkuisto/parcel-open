@@ -42,6 +42,15 @@
 
 "manual.short" = "No automatic tracking";
 
+/* Bulk add */
+"action.addMany" = "Add several packages";
+"bulk.hint" = "One package per line: the tracking number, then an optional name.";
+"bulk.add" = "Add %d packages";
+"bulk.progress" = "Adding %d of %d…";
+"bulk.done" = "%d added";
+"bulk.failed" = "%d not added:";
+"bulk.close" = "Close";
+
 /* Toolbar */
 "action.refresh" = "Refresh";
 "action.add" = "Add package";

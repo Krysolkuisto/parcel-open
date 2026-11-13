@@ -16,6 +16,7 @@ final class AppModel {
     var isRefreshing = false
     var errorMessage: String?
     var showAdd = false
+    var showBulkAdd = false
     var showSettings = false
     var searchText = ""
 
@@ -96,6 +97,36 @@ final class AppModel {
         } catch {
             return (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
+    }
+
+    struct BulkResult {
+        var added = 0
+        var failures: [(number: String, reason: String)] = []
+    }
+
+    /// Adds packages one after another (providers rate-limit, so not in parallel).
+    /// `progress` is called after each one with (done, total).
+    func addMany(_ entries: [NewPackage], progress: @escaping (Int, Int) -> Void) async -> BulkResult {
+        var result = BulkResult()
+        guard let client else {
+            result.failures = entries.map { ($0.trackingNumber, APIError.notConfigured.errorDescription ?? "") }
+            return result
+        }
+        for (index, entry) in entries.enumerated() {
+            do {
+                _ = try await client.add(entry)
+                result.added += 1
+            } catch {
+                result.failures.append((entry.trackingNumber, (error as? LocalizedError)?.errorDescription ?? error.localizedDescription))
+            }
+            progress(index + 1, entries.count)
+        }
+        if let list = try? await client.packages() {
+            packages = list
+            if selection == nil { selection = list.first?.id }
+            await publishWidgetFeed(client)
+        }
+        return result
     }
 
     func rename(_ package: ParcelPackage, to label: String) async {

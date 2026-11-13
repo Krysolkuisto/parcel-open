@@ -42,6 +42,15 @@
 
 "manual.short" = "Pas de suivi automatique";
 
+/* Bulk add */
+"action.addMany" = "Ajouter plusieurs colis";
+"bulk.hint" = "Un colis par ligne : le numéro de suivi, puis un nom facultatif.";
+"bulk.add" = "Ajouter %d colis";
+"bulk.progress" = "Ajout de %d sur %d…";
+"bulk.done" = "%d ajoutés";
+"bulk.failed" = "%d non ajoutés :";
+"bulk.close" = "Fermer";
+
 /* Toolbar */
 "action.refresh" = "Actualiser";
 "action.add" = "Ajouter un colis";
