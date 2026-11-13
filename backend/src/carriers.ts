@@ -118,7 +118,8 @@ export function carrierDisplayName(slug: string): string {
     .join(' ');
 }
 
-const UNIVERSAL_LINK = (n: string) => `https://t.17track.net/en#nums=${encodeURIComponent(n)}`;
+/** Public page for any carrier, shown inside the app when no provider can read the number (opens straight on the result). */
+const UNIVERSAL_LINK = (n: string) => `https://parcelsapp.com/en/tracking/${encodeURIComponent(n)}`;
 
 /**
  * Public page where a human can follow the parcel: the carrier's own site when it accepts the number in the
