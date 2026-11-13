@@ -1,3 +1,4 @@
+import { detectCarrier } from '../carriers.js';
 import type { PackageStatus, TrackInput, TrackingEvent, TrackingProvider, TrackingResult } from '../domain.js';
 
 /**
@@ -36,22 +37,24 @@ export class MockProvider implements TrackingProvider {
     const last = number.slice(-1);
     const status: PackageStatus = SCENARIOS[last] ?? 'in_transit';
     const now = this.now();
-    const at = (hoursAgo: number) => new Date(now - hoursAgo * HOUR).toISOString();
+    // Anchor events to the start of the day so repeated refreshes return the same events (no duplicates).
+    const anchor = Math.floor(now / (24 * HOUR)) * 24 * HOUR;
+    const at = (hoursAgo: number) => new Date(anchor - hoursAgo * HOUR).toISOString();
 
     const timeline: Array<[number, string, string, PackageStatus]> = [
-      [60, 'Shipping label created', 'Corbeil-Essonnes, FR', 'pending'],
-      [48, 'Picked up by carrier', 'Corbeil-Essonnes, FR', 'in_transit'],
-      [30, 'Departed facility', 'Paris, FR', 'in_transit'],
-      [12, 'Arrived at sorting facility', 'Lyon, FR', 'in_transit'],
+      [60, 'Shipping label created', 'Corbeil-Essonnes, France', 'pending'],
+      [48, 'Picked up by carrier', 'Corbeil-Essonnes, France', 'in_transit'],
+      [30, 'Departed facility', 'Paris, France', 'in_transit'],
+      [12, 'Arrived at sorting facility', 'Lyon, France', 'in_transit'],
     ];
-    if (status === 'out_for_delivery') timeline.push([2, 'Out for delivery', 'Meyzieu, FR', status]);
+    if (status === 'out_for_delivery') timeline.push([2, 'Out for delivery', 'Meyzieu, France', status]);
     if (status === 'delivered') {
-      timeline.push([4, 'Out for delivery', 'Meyzieu, FR', 'out_for_delivery']);
-      timeline.push([1, 'Delivered', 'Meyzieu, FR', status]);
+      timeline.push([4, 'Out for delivery', 'Meyzieu, France', 'out_for_delivery']);
+      timeline.push([1, 'Delivered', 'Meyzieu, France', status]);
     }
-    if (status === 'exception') timeline.push([3, 'Delivery exception: address issue', 'Meyzieu, FR', status]);
-    if (status === 'failed_attempt') timeline.push([3, 'Delivery attempted, recipient absent', 'Meyzieu, FR', status]);
-    if (status === 'available_for_pickup') timeline.push([2, 'Ready for pickup at relay point', 'Meyzieu, FR', status]);
+    if (status === 'exception') timeline.push([3, 'Delivery exception: address issue', 'Meyzieu, France', status]);
+    if (status === 'failed_attempt') timeline.push([3, 'Delivery attempted, recipient absent', 'Meyzieu, France', status]);
+    if (status === 'available_for_pickup') timeline.push([2, 'Ready for pickup at relay point', 'Meyzieu, France', status]);
     const keep = status === 'pending' ? 1 : timeline.length;
 
     const events: TrackingEvent[] = timeline
@@ -63,10 +66,10 @@ export class MockProvider implements TrackingProvider {
       status,
       statusText: events[0]?.description ?? null,
       carrierCode: 'mock',
-      carrierName: 'Mock Carrier',
+      carrierName: detectCarrier(number)?.name ?? 'Mock Carrier',
       eta: status === 'delivered' ? null : new Date(now + 24 * HOUR).toISOString(),
-      origin: 'Corbeil-Essonnes, FR',
-      destination: 'Meyzieu, FR',
+      origin: 'Corbeil-Essonnes, France',
+      destination: 'Meyzieu, France',
       events,
       providerRef: null,
     };

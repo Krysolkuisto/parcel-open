@@ -1,45 +1,32 @@
-import CoreLocation
 import MapKit
 import ParcelKit
 import SwiftUI
 
-/// Shows the most recent known place of a package. The backend gives place names, so they are geocoded on device.
+/// Shows the most recent known place of a package. Coordinates come from the backend, which geocodes
+/// the place names found in tracking events (the system geocoder proved unreliable for carrier facility names).
 struct PackageMap: View {
-    let place: String?
+    let position: PackagePosition?
 
-    @State private var position = MapCameraPosition.automatic
-    @State private var coordinate: CLLocationCoordinate2D?
+    @State private var camera = MapCameraPosition.automatic
 
     var body: some View {
-        Group {
-            if let coordinate, let place {
-                Map(position: $position) {
-                    Marker(place, coordinate: coordinate).tint(Color.parcelAccent)
-                }
-                .frame(height: 240)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        if let position {
+            let coordinate = CLLocationCoordinate2D(latitude: position.lat, longitude: position.lon)
+            Map(position: $camera) {
+                Marker(position.place, systemImage: "shippingbox.fill", coordinate: coordinate)
+                    .tint(Color.parcelAccent)
+            }
+            .frame(height: 240)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .onAppear { center(on: coordinate) }
+            .onChange(of: position) { _, new in
+                center(on: CLLocationCoordinate2D(latitude: new.lat, longitude: new.lon))
             }
         }
-        .task(id: place) {
-            coordinate = nil
-            guard let place, let found = await Geocoder.shared.coordinate(for: place) else { return }
-            coordinate = found
-            position = .region(MKCoordinateRegion(
-                center: found, span: MKCoordinateSpan(latitudeDelta: 4, longitudeDelta: 4)))
-        }
     }
-}
 
-/// Small cache so reopening a package does not hit the geocoder again.
-private actor Geocoder {
-    static let shared = Geocoder()
-    private var cache: [String: CLLocationCoordinate2D] = [:]
-
-    func coordinate(for place: String) async -> CLLocationCoordinate2D? {
-        if let cached = cache[place] { return cached }
-        let placemarks = try? await CLGeocoder().geocodeAddressString(place)
-        guard let location = placemarks?.first?.location else { return nil }
-        cache[place] = location.coordinate
-        return location.coordinate
+    private func center(on coordinate: CLLocationCoordinate2D) {
+        camera = .region(MKCoordinateRegion(
+            center: coordinate, span: MKCoordinateSpan(latitudeDelta: 3, longitudeDelta: 3)))
     }
 }

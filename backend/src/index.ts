@@ -1,4 +1,5 @@
 import { loadConfig } from './config.js';
+import { NoGeocoder, NominatimGeocoder } from './geocode.js';
 import { buildProviders } from './providers/index.js';
 import { buildServer } from './server.js';
 import { TrackingService } from './service.js';
@@ -7,7 +8,11 @@ import { Store } from './store.js';
 const config = loadConfig();
 const store = new Store(config.databasePath);
 const providers = buildProviders(config);
-const service = new TrackingService(store, providers, { refreshSpacingMs: config.refreshSpacingMs });
+const geocoder =
+  config.geocoder === 'off'
+    ? new NoGeocoder()
+    : new NominatimGeocoder(store, { baseUrl: config.geocoderUrl, userAgent: config.geocoderUserAgent });
+const service = new TrackingService(store, providers, { refreshSpacingMs: config.refreshSpacingMs, geocoder });
 const app = buildServer({ service, apiToken: config.apiToken, logger: true });
 
 service.on('statusChanged', ({ package: pkg, previous }) => {

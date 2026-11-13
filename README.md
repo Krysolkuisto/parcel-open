@@ -10,8 +10,8 @@ Paste a tracking number and the carrier is detected automatically. Active delive
 
 | Folder | What | Status |
 | --- | --- | --- |
-| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 23 tests |
-| [`app/`](app) | SwiftUI app for macOS and iOS, shared `ParcelKit` package, WidgetKit widget | macOS app working, 9 tests; iOS and widget need Xcode |
+| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 44 tests |
+| [`app/`](app) | SwiftUI app for macOS and iOS, shared `ParcelKit` package, WidgetKit widget | macOS app working, 10 tests; iOS and widget need Xcode |
 
 ## How carrier coverage works
 
@@ -55,7 +55,8 @@ All `/v1` routes need `Authorization: Bearer <API_TOKEN>`. Errors look like `{"e
 | `GET` | `/health` | Liveness (no auth) |
 | `GET` | `/v1/packages?archived=false` | List packages, most urgent first |
 | `POST` | `/v1/packages` | Add a package |
-| `GET` | `/v1/packages/:id` | Package with full event history |
+| `GET` | `/v1/packages/:id` | Package with full event history and map position |
+| `GET` | `/v1/carriers/detect?number=` | Carrier guessed from the tracking number |
 | `PATCH` | `/v1/packages/:id` | Edit `label`, `description`, `archived` |
 | `DELETE` | `/v1/packages/:id` | Delete (and stop tracking at the provider) |
 | `POST` | `/v1/packages/:id/refresh` | Refresh one package now |
@@ -107,6 +108,11 @@ The app and its widget share the server address and token through the App Group.
 
 An iPhone cannot reach `127.0.0.1` on your Mac. Run the backend somewhere reachable over HTTPS (a small server, Tailscale, or a Cloudflare Tunnel), or use your Mac's local address on the same Wi-Fi.
 
+## Carrier and map
+
+- **Carrier:** a quick local guess from the shape of the number (UPS `1Z…`, USPS, La Poste/Colissimo, Royal Mail, China Post, DHL, FedEx, Amazon…) is shown as soon as you paste it, and kept until the provider returns its own carrier name.
+- **Map:** place names from tracking events are geocoded by the backend through [OpenStreetMap Nominatim](https://operations.osmfoundation.org/policies/nominatim/) (identifying User-Agent, one request per second, results cached in the database). Only place names such as "Lyon, France" are sent, never tracking numbers. Set `GEOCODER=off` to disable, or `GEOCODER_URL` to use your own instance.
+
 ## Security notes
 
 - Keep `API_TOKEN` and provider keys on the server, never in the apps' source.
@@ -119,7 +125,8 @@ An iPhone cannot reach `127.0.0.1` on your Mac. Run the backend somewhere reacha
 - [ ] Verify the iPhone build and the WidgetKit widget in Xcode
 - [ ] App icon and screenshots
 - [ ] Push notifications on status change (APNs)
-- [ ] Carrier picker and carrier-code lookup
+- [x] Carrier detection from the tracking number
+- [ ] Manual carrier picker
 - [ ] Docker image
 
 ## License

@@ -11,6 +11,7 @@ private let packageJSON = """
     "deliveredAt": null, "archived": false, "lastCheckedAt": "2026-11-13T10:05:47.431Z", "lastError": null,
     "createdAt": "2026-11-13T10:05:47.430Z", "updatedAt": "2026-11-13T10:05:47Z",
     "lastEvent": {"time": "2026-11-13T08:05:47.431Z", "description": "Out for delivery", "location": "Meyzieu, FR", "status": "out_for_delivery"},
+    "position": {"lat": 45.7764637, "lon": 5.0044767, "place": "Meyzieu, France"},
     "events": [
       {"time": "2026-11-13T08:05:47.431Z", "description": "Out for delivery", "location": "Meyzieu, FR", "status": "out_for_delivery"},
       {"time": "2026-11-12T08:05:47.431Z", "description": "Departed", "location": null, "status": null}
@@ -67,6 +68,8 @@ struct ParcelKitTests {
         #expect(package.events?.count == 2)
         #expect(package.events?[1].location == nil)
         #expect(package.eta != nil)
+        #expect(package.position?.place == "Meyzieu, France")
+        #expect(package.position?.lat == 45.7764637)
         #expect(package.updatedAt.timeIntervalSince1970 == 1_794_564_347) // no fractional seconds
     }
 
@@ -126,6 +129,16 @@ struct ParcelKitTests {
         try await stubbedClient().delete(id: "abc")
         #expect(StubProtocol.lastRequest?.httpMethod == "DELETE")
         #expect(StubProtocol.lastRequest?.url?.path == "/v1/packages/abc")
+    }
+
+    @Test func detectCarrierReturnsTheName() async throws {
+        StubProtocol.handler = { _ in (200, Data(#"{"carrier":{"code":"ups","name":"UPS"}}"#.utf8)) }
+        let name = try await stubbedClient().detectCarrier(number: "1Z14V4W16890664609")
+        #expect(name == "UPS")
+        #expect(StubProtocol.lastRequest?.url?.query == "number=1Z14V4W16890664609")
+
+        StubProtocol.handler = { _ in (200, Data(#"{"carrier":null}"#.utf8)) }
+        #expect(try await stubbedClient().detectCarrier(number: "ZZZ") == nil)
     }
 
     @Test func widgetFeedDecodes() async throws {

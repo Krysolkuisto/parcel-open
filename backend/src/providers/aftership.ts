@@ -7,6 +7,7 @@ import {
   type TrackingProvider,
   type TrackingResult,
 } from '../domain.js';
+import { carrierDisplayName } from '../carriers.js';
 import {
   arr,
   headerValue,
@@ -146,7 +147,7 @@ export function parseTracking(raw: unknown): TrackingResult {
     status: TAG_STATUS[tag] ?? 'unknown',
     statusText: str(t.subtag_message) ?? events[0]?.description ?? null,
     carrierCode: str(t.slug),
-    carrierName: str(t.slug),
+    carrierName: str(t.slug) ? carrierDisplayName(str(t.slug)!) : null,
     eta,
     origin: joinParts(t.origin_city, t.origin_state, t.origin_country_region),
     destination: joinParts(t.destination_city, t.destination_state, t.destination_country_region),

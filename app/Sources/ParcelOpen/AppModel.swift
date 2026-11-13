@@ -70,6 +70,12 @@ final class AppModel {
         }
     }
 
+    /// Carrier name guessed by the backend from a tracking number, if any.
+    func detectCarrier(number: String) async -> String? {
+        guard let client else { return nil }
+        return try? await client.detectCarrier(number: number)
+    }
+
     func loadDetail(id: String) async {
         guard let client else { return }
         do { details[id] = try await client.package(id: id) } catch { report(error) }

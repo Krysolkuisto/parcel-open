@@ -21,7 +21,7 @@ struct PackageDetailView: View {
                 header
                 statusBanner
                 timeline
-                PackageMap(place: events.first?.location ?? package.destination)
+                PackageMap(position: package.position)
             }
             .padding(24)
             .frame(maxWidth: 720, alignment: .leading)

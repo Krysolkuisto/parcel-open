@@ -68,6 +68,13 @@ CREATE TABLE IF NOT EXISTS events (
   UNIQUE (package_id, time, description)
 );
 CREATE INDEX IF NOT EXISTS idx_events_package_time ON events(package_id, time DESC);
+CREATE TABLE IF NOT EXISTS geocode_cache (
+  query TEXT PRIMARY KEY,
+  found INTEGER NOT NULL,
+  lat REAL,
+  lon REAL,
+  created_at TEXT NOT NULL
+);
 `;
 
 export class Store {
@@ -156,6 +163,19 @@ export class Store {
     return this.db
       .prepare('SELECT time, description, location, status FROM events WHERE package_id = ? ORDER BY time DESC, id DESC LIMIT ?')
       .all(packageId, limit) as unknown as TrackingEvent[];
+  }
+
+  getGeocode(query: string): { found: boolean; lat: number | null; lon: number | null; createdAt: string } | undefined {
+    const row = this.db
+      .prepare('SELECT found, lat, lon, created_at FROM geocode_cache WHERE query = ?')
+      .get(query) as unknown as { found: number; lat: number | null; lon: number | null; created_at: string } | undefined;
+    return row && { found: row.found === 1, lat: row.lat, lon: row.lon, createdAt: row.created_at };
+  }
+
+  putGeocode(query: string, point: { lat: number; lon: number } | null): void {
+    this.db
+      .prepare('INSERT OR REPLACE INTO geocode_cache (query, found, lat, lon, created_at) VALUES (?, ?, ?, ?, ?)')
+      .run(query, point ? 1 : 0, point?.lat ?? null, point?.lon ?? null, new Date().toISOString());
   }
 
   latestEvent(packageId: string): TrackingEvent | null {

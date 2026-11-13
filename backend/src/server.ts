@@ -27,6 +27,7 @@ const patchSchema = z
   .partial();
 
 const listQuery = z.object({ archived: z.enum(['true', 'false']).default('false') });
+const carrierQuery = z.object({ number: z.string().trim().min(1).max(60) });
 const widgetQuery = z.object({ limit: z.coerce.number().int().min(1).max(20).default(5) });
 
 export interface ServerOptions {
@@ -111,7 +112,7 @@ export function buildServer({ service, apiToken, logger = false }: ServerOptions
     });
 
     api.get<{ Params: { id: string } }>('/v1/packages/:id', async (req) => ({
-      package: service.get(req.params.id),
+      package: await service.getWithPosition(req.params.id),
     }));
 
     api.patch<{ Params: { id: string } }>('/v1/packages/:id', async (req) => ({
@@ -128,6 +129,10 @@ export function buildServer({ service, apiToken, logger = false }: ServerOptions
     }));
 
     api.post('/v1/refresh', async () => service.refreshAll());
+
+    api.get('/v1/carriers/detect', async (req) => ({
+      carrier: service.detectCarrier(carrierQuery.parse(req.query).number),
+    }));
 
     api.get('/v1/widget', async (req) => service.widget(widgetQuery.parse(req.query).limit));
   });

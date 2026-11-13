@@ -20,6 +20,7 @@ struct PackageForm: View {
 
     @State private var reference = ""
     @State private var description = ""
+    @State private var detectedCarrier: String?
     @State private var errorMessage: String?
     @State private var isBusy = false
     @FocusState private var focus: Field?
@@ -60,7 +61,11 @@ struct PackageForm: View {
             }
             Divider()
             row(tr("form.carrier")) {
-                Text(tr("form.carrierAuto")).foregroundStyle(.secondary)
+                if let name = editing?.carrierName ?? detectedCarrier {
+                    Text(name).foregroundStyle(.primary)
+                } else {
+                    Text(tr("form.carrierAuto")).foregroundStyle(.secondary)
+                }
             }
             Divider()
             row(tr("form.description")) {
@@ -86,6 +91,15 @@ struct PackageForm: View {
         #else
         .presentationDetents([.medium])
         #endif
+        .task(id: reference) {
+            // Debounced: ask the backend which carrier this number looks like.
+            guard editing == nil else { return }
+            let number = reference.trimmingCharacters(in: .whitespaces)
+            guard number.count >= 8 else { detectedCarrier = nil; return }
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            detectedCarrier = await model.detectCarrier(number: number)
+        }
         .onAppear {
             if let editing { description = editing.label ?? "" }
             focus = editing == nil ? .reference : .description

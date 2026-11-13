@@ -10,6 +10,8 @@ import {
   type TrackingProvider,
   type TrackingResult,
 } from './domain.js';
+import { detectCarrier, type DetectedCarrier } from './carriers.js';
+import { NoGeocoder, type Geocoder } from './geocode.js';
 import type { PackageRow, Store } from './store.js';
 
 export interface PackageView {
@@ -32,6 +34,8 @@ export interface PackageView {
   updatedAt: string;
   lastEvent: TrackingEvent | null;
   events?: TrackingEvent[];
+  /** Where the package last was, when the place could be geocoded. Only on single-package reads. */
+  position?: { lat: number; lon: number; place: string } | null;
 }
 
 export interface WidgetView {
@@ -75,6 +79,7 @@ const RANK: Record<PackageStatus, number> = {
   expired: 7,
 };
 
+const noGeocoder = new NoGeocoder();
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange] }> {
@@ -83,7 +88,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
   constructor(
     private readonly store: Store,
     private readonly providers: TrackingProvider[],
-    private readonly options: { refreshSpacingMs: number } = { refreshSpacingMs: 0 },
+    private readonly options: { refreshSpacingMs: number; geocoder?: Geocoder } = { refreshSpacingMs: 0 },
   ) {
     super();
     if (providers.length === 0) throw new Error('At least one tracking provider is required');
@@ -107,6 +112,18 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
 
   get(id: string): PackageView {
     return this.view(this.mustGet(id), true);
+  }
+
+  /** Like `get`, plus the geocoded position of the most recent known place. */
+  async getWithPosition(id: string): Promise<PackageView> {
+    const view = this.get(id);
+    const place = this.currentPlace(view);
+    const point = place ? await this.geocoder.locate(place) : null;
+    return { ...view, position: point && place ? { ...point, place } : null };
+  }
+
+  detectCarrier(trackingNumber: string): DetectedCarrier | null {
+    return detectCarrier(trackingNumber);
   }
 
   widget(limit = 5): WidgetView {
@@ -138,6 +155,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       throw new HttpError(409, 'This tracking number is already tracked');
     }
 
+    const guessed = detectCarrier(trackingNumber);
     const row = this.store.insert({
       trackingNumber,
       label: input.label?.trim() || null,
@@ -146,6 +164,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       postalCode: input.postalCode?.trim() || null,
       provider: this.providers[0]!.name,
     });
+    if (guessed) this.store.update(row.id, { carrier_name: guessed.name });
 
     const errors: ProviderError[] = [];
     for (const provider of this.providers) {
@@ -304,6 +323,18 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
     if (status !== row.status) {
       this.emit('statusChanged', { package: this.get(id), previous: row.status });
     }
+
+    // Look the place up now so the map is ready when the user opens the package.
+    const place = this.currentPlace(this.get(id));
+    if (place) void this.geocoder.locate(place).catch(() => undefined);
+  }
+
+  private get geocoder(): Geocoder {
+    return this.options.geocoder ?? noGeocoder;
+  }
+
+  private currentPlace(view: PackageView): string | null {
+    return view.events?.find((e) => e.location)?.location ?? view.lastEvent?.location ?? view.destination ?? null;
   }
 
   private view(row: PackageRow, withEvents = false): PackageView {

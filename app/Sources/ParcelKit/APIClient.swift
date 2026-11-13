@@ -92,6 +92,13 @@ public struct APIClient: Sendable {
         let _: Empty = try await send("POST", "v1/refresh")
     }
 
+    /// Carrier guessed from the shape of a tracking number (e.g. "UPS"), or nil when unsure.
+    public func detectCarrier(number: String) async throws -> String? {
+        let response: CarrierResponse = try await send(
+            "GET", "v1/carriers/detect", query: [URLQueryItem(name: "number", value: number)])
+        return response.carrier?.name
+    }
+
     public func widget(limit: Int = 5) async throws -> WidgetFeed {
         try await send("GET", "v1/widget", query: [URLQueryItem(name: "limit", value: String(limit))])
     }
@@ -100,6 +107,10 @@ public struct APIClient: Sendable {
 
     private struct PackagesResponse: Decodable { let packages: [ParcelPackage] }
     private struct PackageResponse: Decodable { let package: ParcelPackage }
+    private struct CarrierResponse: Decodable {
+        struct Carrier: Decodable { let name: String }
+        let carrier: Carrier?
+    }
     private struct ErrorResponse: Decodable {
         struct Detail: Decodable { let message: String }
         let error: Detail

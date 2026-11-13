@@ -11,6 +11,10 @@ export interface Config {
   pollIntervalMinutes: number;
   /** Delay between two provider calls during a bulk refresh (17TRACK allows 3 req/s). */
   refreshSpacingMs: number;
+  /** Place-name lookup for the map: "nominatim" (OpenStreetMap by default) or "off". */
+  geocoder: 'nominatim' | 'off';
+  geocoderUrl: string;
+  geocoderUserAgent: string;
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -48,5 +52,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     providers,
     pollIntervalMinutes: num(env.POLL_INTERVAL_MINUTES, 30),
     refreshSpacingMs: num(env.REFRESH_SPACING_MS, 400),
+    geocoder: env.GEOCODER?.trim().toLowerCase() === 'off' ? 'off' : 'nominatim',
+    geocoderUrl: env.GEOCODER_URL?.trim() || 'https://nominatim.openstreetmap.org',
+    geocoderUserAgent:
+      env.GEOCODER_USER_AGENT?.trim() || 'ParcelOpen/0.1 (+https://github.com/Krysolkuisto/parcel-open)',
   };
 }

@@ -38,6 +38,19 @@ public struct TrackingEvent: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+/// Where a package last was, geocoded by the backend.
+public struct PackagePosition: Codable, Hashable, Sendable {
+    public let lat: Double
+    public let lon: Double
+    public let place: String
+
+    public init(lat: Double, lon: Double, place: String) {
+        self.lat = lat
+        self.lon = lon
+        self.place = place
+    }
+}
+
 public struct ParcelPackage: Codable, Hashable, Identifiable, Sendable {
     public let id: String
     public let trackingNumber: String
@@ -59,6 +72,8 @@ public struct ParcelPackage: Codable, Hashable, Identifiable, Sendable {
     public let lastEvent: TrackingEvent?
     /// Only present when fetching a single package.
     public let events: [TrackingEvent]?
+    /// Only present when fetching a single package, and only if the place could be located.
+    public let position: PackagePosition?
 
     /// Name shown in lists: the user's description, or the tracking number.
     public var title: String { (label?.isEmpty == false ? label : nil) ?? trackingNumber }
@@ -69,14 +84,14 @@ public struct ParcelPackage: Codable, Hashable, Identifiable, Sendable {
         statusText: String? = nil, eta: Date? = nil, origin: String? = nil, destination: String? = nil,
         deliveredAt: Date? = nil, archived: Bool = false, lastCheckedAt: Date? = nil, lastError: String? = nil,
         createdAt: Date = Date(), updatedAt: Date = Date(), lastEvent: TrackingEvent? = nil,
-        events: [TrackingEvent]? = nil
+        events: [TrackingEvent]? = nil, position: PackagePosition? = nil
     ) {
         self.id = id; self.trackingNumber = trackingNumber; self.label = label; self.description = description
         self.carrierCode = carrierCode; self.carrierName = carrierName; self.status = status
         self.statusText = statusText; self.eta = eta; self.origin = origin; self.destination = destination
         self.deliveredAt = deliveredAt; self.archived = archived; self.lastCheckedAt = lastCheckedAt
         self.lastError = lastError; self.createdAt = createdAt; self.updatedAt = updatedAt
-        self.lastEvent = lastEvent; self.events = events
+        self.lastEvent = lastEvent; self.events = events; self.position = position
     }
 }
 
