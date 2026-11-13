@@ -48,15 +48,23 @@ function readSecret(prompt) {
           return resolve(value);
         }
         if (ch === '\u0003') process.exit(130); // Ctrl-C
-        if (ch === '\u007f' || ch === '\b') value = value.slice(0, -1);
-        else value += ch;
+        if (ch === '\u007f' || ch === '\b') {
+          if (value.length) process.stdout.write('\b \b');
+          value = value.slice(0, -1);
+        } else if (ch >= ' ') {
+          value += ch;
+          process.stdout.write('•'); // one dot per character: proves the paste arrived without showing the key
+        }
       }
     };
     stdin.on('data', onData);
   });
 }
 
-const value = (await readSecret(`${name} (input is hidden): `)).trim();
+const value = (await readSecret(`${name} (paste it, one • appears per character, then press Enter): `))
+  // a terminal may wrap a paste in bracketed-paste markers
+  .replace(/\u001b\[20[01]~/g, '')
+  .trim();
 if (!value || /[\r\n]/.test(value)) {
   console.error('Nothing saved: the value was empty.');
   process.exit(1);
