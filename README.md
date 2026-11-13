@@ -15,23 +15,31 @@ Paste a tracking number and the carrier is detected automatically. Active delive
 
 ## How carrier coverage works
 
-No free open-source library covers every carrier: carrier sites change often, and scraping them one by one breaks. Parcel Open combines three layers, from free to paid:
+No free open-source library covers every carrier: carrier sites change often, and scraping them one by one breaks (and is often against their terms). Parcel Open uses **free official carrier APIs**, one provider per carrier, and a tracking link for the rest. Everything below the line "Paid" is optional and never needed.
 
-1. **Carrier APIs (free).** Providers that talk to one carrier's own tracking API. They are tried first and skipped for other carriers' numbers. Today: **DHL** (Paket, Express, eCommerce), **UPS** and **La Poste** (Colissimo, Chronopost).
-2. **An aggregator (optional).** One key that follows almost any carrier. **Ship24** has a free API plan (10 shipments a month); 17TRACK and AfterShip are paid.
-3. **A tracking link (always, free).** Every package gets a button that opens the carrier's own page (UPS, FedEx, USPS, DHL, La Poste, Royal Mail, Japan Post, Thailand Post…) or, when the carrier has no usable public link (China Post, Amazon…), 17TRACK's public page. A package that no configured provider can follow is kept anyway and works this way, with no fake data.
+### Free
 
-| Provider | Coverage | Cost | Notes |
+| Provider | Covers | What is free | What I could and could not confirm |
 | --- | --- | --- | --- |
-| `dhl` | DHL Paket, Express, eCommerce | **Free**, 250 calls/day | [Free key](https://developer.dhl.com/api-reference/shipment-tracking): create an app subscribed to *Shipment Tracking - Unified*. Format checked against DHL's public demo key |
-| `laposte` | Colissimo, Chronopost, tracked mail | **Free** key | [developer.laposte.fr](https://developer.laposte.fr): subscribe to the *Suivi* API. Field names taken from open-source clients of the API, not yet run with a real key |
-| `ups` | UPS small packages (`1Z…`) | **Free** | [Developer app](https://developer.ups.com): add the *Tracking* product, copy the Client ID and Secret. OAuth flow and response format follow UPS's official OpenAPI files; not yet run with real credentials |
-| `ship24` | 1,500+ couriers, auto-detected | **Free plan: 10 shipments/month**, no overage | [Key](https://www.ship24.com/tracking-api): choose *Tracking API and Webhook*, not the per-call plan. Format taken from Ship24's OpenAPI file, not yet run with a real key |
-| [17TRACK](https://api.17track.net/en/doc) | 2,900+ carriers (vendor claim) | Paid; one-time free allowance of 200 numbers for accounts created in 2026 | Format taken from the documentation, not yet run with a real key |
-| [AfterShip](https://www.aftership.com/docs/tracking) | 1,000+ carriers (vendor claim) | API access is on paid plans | Format taken from the official SDK types, not yet run with a real key |
-| `mock` | fake data | free | Only with `PROVIDERS=mock`, for development. Packages are flagged **DEMO** in the app |
+| `dhl` | DHL Paket, Express, eCommerce | Free key, 250 calls/day, 1 call/s ([DHL support](https://support-developer.dhl.com/support/solutions/articles/47001249492-is-the-dhl-shipment-tracking-unified-api-free-of-charge-)) | Response format checked against DHL's public demo key. Terms for commercial use not confirmed: read them on developer.dhl.com |
+| `ups` | UPS small packages (`1Z…`) | Tracking API is free; the developer portal is free | Third-party guides disagree on whether a UPS shipper account number is required to create an app. Try with your normal UPS.com login. Format follows UPS's official OpenAPI files; not run with real credentials |
+| `laposte` | Colissimo, Chronopost, tracked mail | A "Freemium" plan exists on [developer.laposte.fr](https://developer.laposte.fr) | Daily quota and commercial-use terms not confirmed. Field names come from open-source clients of the API; not run with a real key |
+| tracking link | every carrier | always | Opens the carrier's page, or 17TRACK's public page. No fake data, no key |
 
-Providers are tried in this order: `dhl`, `ups`, `laposte`, `17track`, `aftership`, `ship24` (override with `PROVIDERS`). Adding a provider means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); `backend/src/providers/dhl.ts` is a compact example. Each provider has its own quotas, pricing and terms: check them before relying on one.
+Mondial Relay, Relais Colis, Vinted Go, Amazon, China Post, Thailand Post and Japan Post have no free public tracking API that I know of: they use the tracking link.
+
+"Free" does not mean unlimited or allowed for any use: check each provider's quota and terms, especially if you use the data for a business.
+
+### Paid or capped (optional)
+
+| Provider | Notes |
+| --- | --- |
+| `ship24` | Free plan limited to 10 shipments a month, any carrier. Format from Ship24's OpenAPI file; not run with a real key |
+| `17track` | Paid after a one-time allowance of 200 numbers for accounts created in 2026. Format from the documentation; not run with a real key |
+| `aftership` | API access is on paid plans. Format from the official SDK types; not run with a real key |
+| `mock` | Fake data, only with `PROVIDERS=mock`, for development. Packages are flagged **DEMO** in the app |
+
+Providers are tried in this order: `dhl`, `ups`, `laposte`, `17track`, `aftership`, `ship24` (override with `PROVIDERS`). A provider that cannot handle a number is skipped. Adding a provider means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); `backend/src/providers/dhl.ts` is a compact example.
 
 ## Setting up provider keys
 
@@ -48,8 +56,8 @@ npm start                             # restart the backend to use them
 ```
 
 - **DHL:** on [developer.dhl.com](https://developer.dhl.com/api-reference/shipment-tracking), register, create an app, subscribe it to *Shipment Tracking - Unified* and copy its API key. A first key is limited to 250 calls a day.
-- **UPS:** on [developer.ups.com](https://developer.ups.com), create an app with the *Tracking* product and copy its Client ID and Client Secret (the secret is shown once). Third-party guides say UPS may require a UPS account with a shipper number before it lets you create an app: if it does, skip UPS and use a link or an aggregator for UPS parcels.
-- **La Poste:** on [developer.laposte.fr](https://developer.laposte.fr), create an account, subscribe to the *Suivi* API and copy the key (64 characters). It covers Colissimo and Chronopost. Mondial Relay, Relais Colis and Vinted Go have no public tracking API: use an aggregator or the carrier link.
+- **UPS:** on [developer.ups.com](https://developer.ups.com), sign in with a UPS.com account, create an app with the *Tracking* product and copy its Client ID and Client Secret (the secret is shown once). If the portal insists on a shipper account number, skip UPS: its parcels will use the tracking link.
+- **La Poste:** on [developer.laposte.fr](https://developer.laposte.fr), create an account and an application, subscribe it to the *Suivi* API with the free "Freemium" offer and copy the key (64 characters). It covers Colissimo and Chronopost. Mondial Relay, Relais Colis and Vinted Go have no public tracking API: use the carrier link.
 - **Ship24, 17TRACK, AfterShip:** same commands with `SHIP24_API_KEY`, `TRACK17_API_KEY`, `AFTERSHIP_API_KEY`.
 
 ## Backend quick start
