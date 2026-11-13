@@ -1,0 +1,74 @@
+/* Statuses */
+"status.unknown" = "No data available";
+"status.pending" = "Information received";
+"status.in_transit" = "In transit";
+"status.out_for_delivery" = "Out for delivery";
+"status.available_for_pickup" = "Ready for pickup";
+"status.failed_attempt" = "Delivery attempt failed";
+"status.exception" = "Problem with delivery";
+"status.delivered" = "Delivered";
+"status.expired" = "Tracking expired";
+
+/* Errors */
+"error.title" = "Something went wrong";
+"error.notConfigured" = "Set up your server first.";
+"error.invalidResponse" = "The server sent an unexpected response.";
+
+/* List */
+"list.section.active" = "In progress";
+"list.section.delivered" = "Delivered";
+"list.empty.title" = "No packages";
+"list.empty.message" = "Add a tracking number to start following a delivery.";
+"list.search" = "Search";
+"list.delivery" = "Delivery: %@";
+
+/* Detail */
+"detail.select" = "Select a package";
+"detail.fullHistory" = "View full history";
+"detail.lessHistory" = "Show less";
+"detail.noEvents" = "No tracking events yet.";
+"detail.eta" = "Estimated delivery";
+"detail.route" = "Route";
+"detail.lastError" = "Last refresh failed: %@";
+"detail.refreshing" = "Updating…";
+
+/* Toolbar */
+"action.refresh" = "Refresh";
+"action.add" = "Add package";
+"action.edit" = "Edit";
+"action.delete" = "Delete";
+"action.archive" = "Archive";
+"action.unarchive" = "Restore";
+"action.share" = "Share";
+"action.cancel" = "Cancel";
+"action.save" = "Save";
+"action.ok" = "OK";
+"action.paste" = "Paste";
+"action.deleteConfirm" = "Delete this package?";
+"action.deleteMessage" = "It will no longer be tracked.";
+
+/* Add / edit form */
+"form.reference" = "Reference";
+"form.required" = "Required";
+"form.carrier" = "Carrier";
+"form.carrierAuto" = "Automatic";
+"form.description" = "Description";
+"form.optional" = "Optional";
+
+/* Server settings */
+"settings.title" = "Server";
+"settings.url" = "Server URL";
+"settings.token" = "API token";
+"settings.test" = "Test connection";
+"settings.connected" = "Connected";
+"settings.hint" = "Start the Parcel Open backend, then enter its address and the API_TOKEN from its .env file.";
+"settings.invalid" = "Enter a valid address and token.";
+
+/* Widget */
+"widget.name" = "Parcel Open";
+"widget.description" = "Your packages in progress at a glance.";
+"widget.setup" = "Open the app to set up your server.";
+"widget.empty" = "No packages in progress";
+"widget.active" = "%d in progress";
+"widget.outForDelivery" = "%d out for delivery";
+"widget.offline" = "Offline";

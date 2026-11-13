@@ -1,0 +1,74 @@
+/* Statuses */
+"status.unknown" = "Pas de données disponibles";
+"status.pending" = "Informations reçues";
+"status.in_transit" = "En transit";
+"status.out_for_delivery" = "En cours de livraison";
+"status.available_for_pickup" = "Disponible au retrait";
+"status.failed_attempt" = "Tentative de livraison échouée";
+"status.exception" = "Problème de livraison";
+"status.delivered" = "Livré";
+"status.expired" = "Suivi expiré";
+
+/* Errors */
+"error.title" = "Une erreur est survenue";
+"error.notConfigured" = "Configurez d'abord votre serveur.";
+"error.invalidResponse" = "Le serveur a envoyé une réponse inattendue.";
+
+/* List */
+"list.section.active" = "En cours";
+"list.section.delivered" = "Livrés";
+"list.empty.title" = "Aucun colis";
+"list.empty.message" = "Ajoutez un numéro de suivi pour suivre une livraison.";
+"list.search" = "Rechercher";
+"list.delivery" = "Livraison: %@";
+
+/* Detail */
+"detail.select" = "Sélectionnez un colis";
+"detail.fullHistory" = "Voir l'historique complet";
+"detail.lessHistory" = "Réduire";
+"detail.noEvents" = "Aucun événement de suivi pour l'instant.";
+"detail.eta" = "Livraison estimée";
+"detail.route" = "Trajet";
+"detail.lastError" = "Échec de la dernière actualisation: %@";
+"detail.refreshing" = "Mise à jour…";
+
+/* Toolbar */
+"action.refresh" = "Actualiser";
+"action.add" = "Ajouter un colis";
+"action.edit" = "Modifier";
+"action.delete" = "Supprimer";
+"action.archive" = "Archiver";
+"action.unarchive" = "Restaurer";
+"action.share" = "Partager";
+"action.cancel" = "Annuler";
+"action.save" = "Enregistrer";
+"action.ok" = "OK";
+"action.paste" = "Coller";
+"action.deleteConfirm" = "Supprimer ce colis ?";
+"action.deleteMessage" = "Il ne sera plus suivi.";
+
+/* Add / edit form */
+"form.reference" = "Référence";
+"form.required" = "Champ requis";
+"form.carrier" = "Transporteur";
+"form.carrierAuto" = "Automatique";
+"form.description" = "Description";
+"form.optional" = "Facultatif";
+
+/* Server settings */
+"settings.title" = "Serveur";
+"settings.url" = "Adresse du serveur";
+"settings.token" = "Jeton d'API";
+"settings.test" = "Tester la connexion";
+"settings.connected" = "Connecté";
+"settings.hint" = "Lancez le backend Parcel Open, puis saisissez son adresse et l'API_TOKEN de son fichier .env.";
+"settings.invalid" = "Saisissez une adresse et un jeton valides.";
+
+/* Widget */
+"widget.name" = "Parcel Open";
+"widget.description" = "Vos colis en cours en un coup d'œil.";
+"widget.setup" = "Ouvrez l'app pour configurer votre serveur.";
+"widget.empty" = "Aucun colis en cours";
+"widget.active" = "%d en cours";
+"widget.outForDelivery" = "%d en livraison";
+"widget.offline" = "Hors ligne";
