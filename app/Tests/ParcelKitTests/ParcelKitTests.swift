@@ -6,7 +6,7 @@ private let packageJSON = """
 {
   "package": {
     "id": "4397069c", "trackingNumber": "1Z14V4W16890664611", "label": "1st pack", "description": null,
-    "carrierCode": "mock", "carrierName": "UPS", "provider": "mock", "trackingUrl": "https://www.ups.com/track?tracknum=1Z14", "status": "out_for_delivery", "statusText": "Out for delivery",
+    "carrierCode": "mock", "carrierName": "UPS", "provider": "mock", "trackingUrl": "https://www.ups.com/track?tracknum=1Z14", "setupHint": "UPS_CLIENT_ID + UPS_CLIENT_SECRET", "status": "out_for_delivery", "statusText": "Out for delivery",
     "eta": "2026-11-14T10:05:47.431Z", "origin": "Corbeil, FR", "destination": "Meyzieu, FR",
     "deliveredAt": null, "archived": false, "lastCheckedAt": "2026-11-13T10:05:47.431Z", "lastError": null,
     "createdAt": "2026-11-13T10:05:47.430Z", "updatedAt": "2026-11-13T10:05:47Z",
@@ -70,6 +70,8 @@ struct ParcelKitTests {
         #expect(package.eta != nil)
         #expect(package.isDemo)
         #expect(!package.isManual)
+        #expect(package.setupHint == "UPS_CLIENT_ID + UPS_CLIENT_SECRET")
+        #expect(tr("manual.notice", "DHL_API_KEY").contains("DHL_API_KEY"))
         #expect(package.trackingLink?.host == "www.ups.com")
         #expect(package.position?.place == "Meyzieu, France")
         #expect(package.position?.lat == 45.7764637)

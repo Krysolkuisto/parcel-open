@@ -142,3 +142,11 @@ export function trackingUrl(rawNumber: string, carrierCode?: string | null): str
   if (code === 'thailand-post') return `https://track.thailandpost.co.th/?trackNumber=${n}`;
   return UNIVERSAL_LINK(rawNumber.replace(/[\s-]+/g, '').toUpperCase());
 }
+
+/** What to put in `.env` so a number can be tracked automatically (shown for packages no provider can follow). */
+export function setupHint(rawNumber: string): string {
+  const code = detectCarrier(rawNumber)?.code ?? '';
+  if (code === 'ups') return 'UPS_CLIENT_ID + UPS_CLIENT_SECRET';
+  if (code.startsWith('dhl') || code.startsWith('deutsche-post')) return 'DHL_API_KEY';
+  return 'SHIP24_API_KEY';
+}

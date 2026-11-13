@@ -38,7 +38,7 @@
 
 /* Manual tracking */
 "detail.openTracking" = "Ouvrir sur le site du transporteur";
-"manual.notice" = "Le suivi automatique n'est pas disponible pour ce transporteur avec votre configuration actuelle. Suivez-le avec le bouton ci-dessous, ou ajoutez une clé de fournisseur de suivi à votre backend.";
+"manual.notice" = "Pas de suivi automatique pour ce transporteur. Pour l'activer, ajoutez %@ dans backend/.env, puis redémarrez le backend.";
 
 /* Toolbar */
 "action.refresh" = "Actualiser";

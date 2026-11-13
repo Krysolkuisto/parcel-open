@@ -10,7 +10,7 @@ import {
   type TrackingProvider,
   type TrackingResult,
 } from './domain.js';
-import { detectCarrier, trackingUrl, type DetectedCarrier } from './carriers.js';
+import { detectCarrier, setupHint, trackingUrl, type DetectedCarrier } from './carriers.js';
 import { NoGeocoder, type Geocoder } from './geocode.js';
 import type { PackageRow, Store } from './store.js';
 
@@ -25,6 +25,8 @@ export interface PackageView {
   provider: string;
   /** Public page to follow the parcel by hand (carrier site, or 17TRACK). */
   trackingUrl: string;
+  /** For "manual" packages: the `.env` setting that would enable automatic tracking. */
+  setupHint: string | null;
   status: PackageStatus;
   statusText: string | null;
   eta: string | null;
@@ -412,6 +414,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       carrierName: row.carrier_name,
       provider: row.provider,
       trackingUrl: trackingUrl(row.tracking_number, detectCarrier(row.tracking_number)?.code ?? row.carrier_code),
+      setupHint: row.provider === 'manual' ? setupHint(row.tracking_number) : null,
       status: row.status,
       statusText: row.status_text,
       eta: row.eta,

@@ -38,7 +38,7 @@
 
 /* Manual tracking */
 "detail.openTracking" = "Open on the carrier's site";
-"manual.notice" = "Automatic tracking isn't available for this carrier with your current setup. Follow it with the button below, or add a tracking provider key to your backend.";
+"manual.notice" = "No automatic tracking for this carrier yet. To enable it, add %@ to backend/.env, then restart the backend.";
 
 /* Toolbar */
 "action.refresh" = "Refresh";

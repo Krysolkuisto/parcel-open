@@ -7,6 +7,8 @@ export interface Config {
   aftershipKey: string | null;
   dhlKey: string | null;
   ship24Key: string | null;
+  upsClientId: string | null;
+  upsClientSecret: string | null;
   aftershipWebhookSecret: string | null;
   /** Provider names in priority order. */
   providers: string[];
@@ -29,6 +31,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const aftershipKey = env.AFTERSHIP_API_KEY?.trim() || null;
   const dhlKey = env.DHL_API_KEY?.trim() || null;
   const ship24Key = env.SHIP24_API_KEY?.trim() || null;
+  const upsClientId = env.UPS_CLIENT_ID?.trim() || null;
+  const upsClientSecret = env.UPS_CLIENT_SECRET?.trim() || null;
 
   let providers = (env.PROVIDERS ?? '')
     .split(',')
@@ -37,6 +41,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (providers.length === 0) {
     // Free carrier-specific APIs first so they do not use up an aggregator's quota.
     if (dhlKey) providers.push('dhl');
+    if (upsClientId && upsClientSecret) providers.push('ups');
     if (track17Key) providers.push('17track');
     if (aftershipKey) providers.push('aftership');
     if (ship24Key) providers.push('ship24');
@@ -56,6 +61,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     aftershipKey,
     dhlKey,
     ship24Key,
+    upsClientId,
+    upsClientSecret,
     aftershipWebhookSecret: env.AFTERSHIP_WEBHOOK_SECRET?.trim() || null,
     providers,
     pollIntervalMinutes: num(env.POLL_INTERVAL_MINUTES, 30),

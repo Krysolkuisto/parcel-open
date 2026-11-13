@@ -28,7 +28,7 @@ struct PackageDetailView: View {
                         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.orange.opacity(0.12)))
                 }
                 if package.isManual {
-                    Label(tr("manual.notice"), systemImage: "info.circle.fill")
+                    Label(tr("manual.notice", package.setupHint ?? "SHIP24_API_KEY"), systemImage: "info.circle.fill")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .padding(12)
@@ -120,7 +120,7 @@ struct PackageDetailView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
-            .controlSize(.large)
+            .controlSize(package.isManual ? .large : .small)
         }
     }
 

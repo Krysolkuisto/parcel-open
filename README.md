@@ -10,26 +10,27 @@ Paste a tracking number and the carrier is detected automatically. Active delive
 
 | Folder | What | Status |
 | --- | --- | --- |
-| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 67 tests |
+| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 75 tests |
 | [`app/`](app) | SwiftUI app for macOS and iOS, shared `ParcelKit` package, WidgetKit widget | macOS app working, 10 tests; iOS and widget need Xcode |
 
 ## How carrier coverage works
 
 No free open-source library covers every carrier: carrier sites change often, and scraping them one by one breaks. Parcel Open combines three layers, from free to paid:
 
-1. **Carrier APIs (free).** Providers that talk to one carrier's own tracking API. They are tried first and skipped for other carriers' numbers. Today: **DHL** (Paket, Express, eCommerce).
+1. **Carrier APIs (free).** Providers that talk to one carrier's own tracking API. They are tried first and skipped for other carriers' numbers. Today: **DHL** (Paket, Express, eCommerce) and **UPS**.
 2. **An aggregator (optional).** One key that follows almost any carrier. **Ship24** has a free API plan (10 shipments a month); 17TRACK and AfterShip are paid.
 3. **A tracking link (always, free).** Every package gets a button that opens the carrier's own page (UPS, FedEx, USPS, DHL, La Poste, Royal Mail, Japan Post, Thailand Post…) or, when the carrier has no usable public link (China Post, Amazon…), 17TRACK's public page. A package that no configured provider can follow is kept anyway and works this way, with no fake data.
 
 | Provider | Coverage | Cost | Notes |
 | --- | --- | --- | --- |
 | `dhl` | DHL Paket, Express, eCommerce | **Free**, 250 calls/day | [Free key](https://developer.dhl.com/api-reference/shipment-tracking): create an app subscribed to *Shipment Tracking - Unified*. Format checked against DHL's public demo key |
+| `ups` | UPS small packages (`1Z…`) | **Free** | [Developer app](https://developer.ups.com): add the *Tracking* product, copy the Client ID and Secret. OAuth flow and response format follow UPS's official OpenAPI files; not yet run with real credentials |
 | `ship24` | 1,500+ couriers, auto-detected | **Free plan: 10 shipments/month**, no overage | [Key](https://www.ship24.com/tracking-api): choose *Tracking API and Webhook*, not the per-call plan. Format taken from Ship24's OpenAPI file, not yet run with a real key |
 | [17TRACK](https://api.17track.net/en/doc) | 2,900+ carriers (vendor claim) | Paid; one-time free allowance of 200 numbers for accounts created in 2026 | Format taken from the documentation, not yet run with a real key |
 | [AfterShip](https://www.aftership.com/docs/tracking) | 1,000+ carriers (vendor claim) | API access is on paid plans | Format taken from the official SDK types, not yet run with a real key |
 | `mock` | fake data | free | Only with `PROVIDERS=mock`, for development. Packages are flagged **DEMO** in the app |
 
-Providers are tried in this order: `dhl`, `17track`, `aftership`, `ship24` (override with `PROVIDERS`). Adding a provider means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); `backend/src/providers/dhl.ts` is a compact example. Each provider has its own quotas, pricing and terms: check them before relying on one.
+Providers are tried in this order: `dhl`, `ups`, `17track`, `aftership`, `ship24` (override with `PROVIDERS`). Adding a provider means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); `backend/src/providers/dhl.ts` is a compact example. Each provider has its own quotas, pricing and terms: check them before relying on one.
 
 ## Backend quick start
 
