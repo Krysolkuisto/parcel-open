@@ -17,7 +17,7 @@ const POSTAL_OPERATORS: Record<string, DetectedCarrier> = {
   US: usps,
   CN: { code: 'china-post', name: 'China Post' },
   HK: { code: 'hong-kong-post', name: 'Hongkong Post' },
-  DE: { code: 'deutsche-post', name: 'Deutsche Post' },
+  DE: { code: 'dhl-paket', name: 'DHL Paket' },
   NL: { code: 'postnl', name: 'PostNL' },
   BE: { code: 'bpost', name: 'bpost' },
   ES: { code: 'correos', name: 'Correos' },

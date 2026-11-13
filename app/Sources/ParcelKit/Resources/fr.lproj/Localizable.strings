@@ -32,6 +32,10 @@
 "detail.lastError" = "Échec de la dernière actualisation: %@";
 "detail.refreshing" = "Mise à jour…";
 
+/* Demo data */
+"demo.badge" = "DÉMO";
+"demo.notice" = "Données de démonstration : aucune clé d'API de suivi n'est configurée sur votre serveur, ce suivi est donc inventé. Ajoutez une clé 17TRACK ou AfterShip au backend pour suivre de vrais colis.";
+
 /* Toolbar */
 "action.refresh" = "Actualiser";
 "action.add" = "Ajouter un colis";

@@ -36,7 +36,57 @@ const t17Item = {
   },
 };
 
+// Mirrors what 17track.net shows for a DHL Paket parcel from Germany to France that was only announced:
+// two carriers listed, the destination one (La Poste) without any event yet.
+const t17InfoReceived = {
+  number: 'CP044239925DE',
+  carrier: 7041,
+  tag: 'InfoReceived',
+  track_info: {
+    latest_status: { status: 'InfoReceived', sub_status: 'InfoReceived', sub_status_descr: null },
+    latest_event: {
+      time_iso: '2026-11-09T04:15:00+01:00',
+      description: 'The instruction data for this shipment have been provided by the sender to DHL electronically',
+      location: null,
+      stage: 'InfoReceived',
+    },
+    shipping_info: { shipper_address: { country: 'DE' }, recipient_address: { country: 'FR' } },
+    tracking: {
+      providers: [
+        { provider: { key: 6051, name: 'La Poste (Colissimo)' }, events: [] },
+        {
+          provider: { key: 7041, name: 'DHL Paket' },
+          events: [
+            {
+              time_iso: '2026-11-09T04:15:00+01:00',
+              description: 'The instruction data for this shipment have been provided by the sender to DHL electronically',
+              location: null,
+              stage: 'InfoReceived',
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
 describe('17TRACK provider', () => {
+  it('reads an announced-only parcel with two carriers (real-world shape)', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ code: 0, data: { accepted: [{ number: 'CP044239925DE', carrier: 7041 }], rejected: [] } }))
+      .mockResolvedValueOnce(jsonResponse({ code: 0, data: { accepted: [t17InfoReceived], rejected: [] } }));
+    const result = await new Track17Provider('KEY', fetchMock as unknown as typeof fetch).register({ trackingNumber: 'CP044239925DE' });
+
+    expect(result.status).toBe('pending');
+    expect(result.carrierName).toBe('DHL Paket'); // not the destination carrier that has no data yet
+    expect(result.origin).toBe('DE');
+    expect(result.destination).toBe('FR');
+    expect(result.events).toHaveLength(1);
+    expect(result.events[0]!.time).toBe('2026-11-09T03:15:00.000Z');
+    expect(result.statusText).toContain('instruction data');
+  });
+
   it('registers then reads tracking info, normalizing the result', async () => {
     const fetchMock = vi
       .fn()

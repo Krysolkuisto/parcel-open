@@ -171,7 +171,13 @@ export function parseAccepted(item: Json): TrackingResult {
     const addr = obj(a);
     return joinParts(addr.city, addr.state, addr.country);
   };
-  const provider = obj(providers[0]?.provider);
+  // A package can list several carriers (origin and destination, e.g. DHL Paket then La Poste). The one that
+  // actually reported events is the one currently handling it; the others are usually still empty.
+  const main = providers.reduce<Json | undefined>(
+    (best, p) => (arr(p.events).length > arr(best?.events).length ? p : best),
+    providers[0],
+  );
+  const provider = obj(main?.provider);
 
   return {
     status,

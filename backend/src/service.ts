@@ -21,6 +21,8 @@ export interface PackageView {
   description: string | null;
   carrierCode: string | null;
   carrierName: string | null;
+  /** Which tracking provider supplies the data. "mock" means fake demo data. */
+  provider: string;
   status: PackageStatus;
   statusText: string | null;
   eta: string | null;
@@ -296,8 +298,27 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
   }
 
   private apply(id: string, providerName: string, result: TrackingResult, providerRef: string | null = null): void {
-    const row = this.mustGet(id);
+    let row = this.mustGet(id);
     const now = new Date().toISOString();
+
+    // Data from another provider (e.g. demo data before a real API key was added) must not linger:
+    // forget everything it said and start from what the new provider reports.
+    if (row.provider !== providerName) {
+      this.store.deleteEvents(id);
+      row = {
+        ...row,
+        provider: providerName,
+        provider_ref: null,
+        status: 'unknown',
+        status_text: null,
+        carrier_code: null,
+        carrier_name: row.carrier_name && detectCarrier(row.tracking_number)?.name === row.carrier_name ? row.carrier_name : null,
+        eta: null,
+        origin: null,
+        destination: null,
+        delivered_at: null,
+      };
+    }
     this.store.saveEvents(id, result.events);
 
     // A provider that has no data yet must not erase what we already know.
@@ -346,6 +367,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       description: row.description,
       carrierCode: row.carrier_code,
       carrierName: row.carrier_name,
+      provider: row.provider,
       status: row.status,
       statusText: row.status_text,
       eta: row.eta,

@@ -159,6 +159,10 @@ export class Store {
     return added;
   }
 
+  deleteEvents(packageId: string): void {
+    this.db.prepare('DELETE FROM events WHERE package_id = ?').run(packageId);
+  }
+
   events(packageId: string, limit = 200): TrackingEvent[] {
     return this.db
       .prepare('SELECT time, description, location, status FROM events WHERE package_id = ? ORDER BY time DESC, id DESC LIMIT ?')

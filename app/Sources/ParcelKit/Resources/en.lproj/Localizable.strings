@@ -32,6 +32,10 @@
 "detail.lastError" = "Last refresh failed: %@";
 "detail.refreshing" = "Updating…";
 
+/* Demo data */
+"demo.badge" = "DEMO";
+"demo.notice" = "Demo data: no tracking API key is set on your server, so this tracking is made up. Add a 17TRACK or AfterShip key to the backend to follow real parcels.";
+
 /* Toolbar */
 "action.refresh" = "Refresh";
 "action.add" = "Add package";

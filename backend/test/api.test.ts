@@ -209,6 +209,47 @@ describe('service behaviour', () => {
   });
 });
 
+describe('provider switch', () => {
+  afterEach(async () => {
+    await app.close();
+    store.close();
+  });
+
+  it('drops data written by another provider (demo data) when a real provider takes over', async () => {
+    setup([new MockProvider()]);
+    const created = (await add('SWITCH9')).json().package;
+    expect(created.provider).toBe('mock');
+    expect(service.get(created.id).events!.length).toBeGreaterThan(3);
+
+    const real: TrackingProvider = {
+      name: 'real',
+      acceptsCarrier: () => false,
+      register: async () => realResult(),
+      refresh: async () => realResult(),
+    };
+    const realResult = (): TrackingResult => ({
+      status: 'pending',
+      statusText: 'Announced',
+      carrierCode: null,
+      carrierName: 'DHL Paket',
+      eta: null,
+      origin: null,
+      destination: null,
+      events: [{ time: '2026-11-09T03:15:00.000Z', description: 'Announced', location: null, status: 'pending' }],
+      providerRef: null,
+    });
+    // Same database, the mock provider is no longer configured.
+    service = new TrackingService(store, [real]);
+    app = buildServer({ service, apiToken: 'test-token' });
+
+    const refreshed = (await app.inject({ method: 'POST', url: `/v1/packages/${created.id}/refresh`, headers: AUTH })).json().package;
+    expect(refreshed.provider).toBe('real');
+    expect(refreshed.status).toBe('pending');
+    expect(refreshed.carrierName).toBe('DHL Paket');
+    expect(service.get(created.id).events!.map((e) => e.description)).toEqual(['Announced']);
+  });
+});
+
 describe('webhooks', () => {
   beforeEach(() => setup([new Track17Provider('WHKEY'), new MockProvider()]));
   afterEach(async () => {

@@ -6,7 +6,7 @@ private let packageJSON = """
 {
   "package": {
     "id": "4397069c", "trackingNumber": "1Z14V4W16890664611", "label": "1st pack", "description": null,
-    "carrierCode": "mock", "carrierName": "UPS", "status": "out_for_delivery", "statusText": "Out for delivery",
+    "carrierCode": "mock", "carrierName": "UPS", "provider": "mock", "status": "out_for_delivery", "statusText": "Out for delivery",
     "eta": "2026-11-14T10:05:47.431Z", "origin": "Corbeil, FR", "destination": "Meyzieu, FR",
     "deliveredAt": null, "archived": false, "lastCheckedAt": "2026-11-13T10:05:47.431Z", "lastError": null,
     "createdAt": "2026-11-13T10:05:47.430Z", "updatedAt": "2026-11-13T10:05:47Z",
@@ -68,6 +68,7 @@ struct ParcelKitTests {
         #expect(package.events?.count == 2)
         #expect(package.events?[1].location == nil)
         #expect(package.eta != nil)
+        #expect(package.isDemo)
         #expect(package.position?.place == "Meyzieu, France")
         #expect(package.position?.lat == 45.7764637)
         #expect(package.updatedAt.timeIntervalSince1970 == 1_794_564_347) // no fractional seconds

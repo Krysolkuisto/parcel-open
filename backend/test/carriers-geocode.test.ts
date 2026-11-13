@@ -15,6 +15,7 @@ describe('carrier detection', () => {
     ['RR123456789FR', 'La Poste'],
     ['LZ123456789GB', 'Royal Mail'],
     ['EE123456789CN', 'China Post'],
+    ['CP044239925DE', 'DHL Paket'],
     ['6A12345678901', 'Colissimo'],
     ['JJD0099999999', 'DHL'],
     ['YT2012345678901234', 'YunExpress'],

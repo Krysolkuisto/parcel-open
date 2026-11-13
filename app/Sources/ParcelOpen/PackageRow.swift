@@ -15,10 +15,20 @@ struct PackageRow: View {
                 .foregroundStyle(isSelected ? Color.white : package.status.color)
                 .frame(width: 36)
             VStack(alignment: .leading, spacing: 2) {
-                Text(package.title)
-                    .font(.headline)
-                    .foregroundStyle(primary)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(package.title)
+                        .font(.headline)
+                        .foregroundStyle(primary)
+                        .lineLimit(1)
+                    if package.isDemo {
+                        Text(tr("demo.badge"))
+                            .font(.caption2.weight(.bold))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Capsule().fill(isSelected ? Color.white.opacity(0.25) : Color.orange.opacity(0.25)))
+                            .foregroundStyle(isSelected ? Color.white : Color.orange)
+                    }
+                }
                 Text(package.statusText ?? package.status.title)
                     .font(.subheadline)
                     .foregroundStyle(secondary)
