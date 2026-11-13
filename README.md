@@ -10,7 +10,7 @@ Paste a tracking number and the carrier is detected automatically. Active delive
 
 | Folder | What | Status |
 | --- | --- | --- |
-| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 75 tests |
+| [`backend/`](backend) | TypeScript tracking API (Fastify + SQLite) | working, 79 tests |
 | [`app/`](app) | SwiftUI app for macOS and iOS, shared `ParcelKit` package, WidgetKit widget | macOS app working, 10 tests; iOS and widget need Xcode |
 
 ## How carrier coverage works
@@ -31,6 +31,23 @@ No free open-source library covers every carrier: carrier sites change often, an
 | `mock` | fake data | free | Only with `PROVIDERS=mock`, for development. Packages are flagged **DEMO** in the app |
 
 Providers are tried in this order: `dhl`, `ups`, `17track`, `aftership`, `ship24` (override with `PROVIDERS`). Adding a provider means implementing a small interface (`TrackingProvider` in [`backend/src/domain.ts`](backend/src/domain.ts)); `backend/src/providers/dhl.ts` is a compact example. Each provider has its own quotas, pricing and terms: check them before relying on one.
+
+## Setting up provider keys
+
+Save a key without showing it on screen, then test it. The key goes into `backend/.env` (never committed):
+
+```bash
+cd backend
+npm run set-key -- DHL_API_KEY        # hidden prompt, paste the key and press Enter
+npm run set-key -- UPS_CLIENT_ID
+npm run set-key -- UPS_CLIENT_SECRET
+npm run doctor                        # tests every configured key, prints only ✓ / ✗
+npm start                             # restart the backend to use them
+```
+
+- **DHL:** on [developer.dhl.com](https://developer.dhl.com/api-reference/shipment-tracking), register, create an app, subscribe it to *Shipment Tracking - Unified* and copy its API key. A first key is limited to 250 calls a day.
+- **UPS:** on [developer.ups.com](https://developer.ups.com), create an app with the *Tracking* product and copy its Client ID and Client Secret (the secret is shown once). Third-party guides say UPS may require a UPS account with a shipper number before it lets you create an app: if it does, skip UPS and use a link or an aggregator for UPS parcels.
+- **Ship24, 17TRACK, AfterShip:** same commands with `SHIP24_API_KEY`, `TRACK17_API_KEY`, `AFTERSHIP_API_KEY`.
 
 ## Backend quick start
 

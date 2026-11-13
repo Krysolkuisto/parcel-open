@@ -96,6 +96,11 @@ export class AfterShipProvider implements TrackingProvider {
     return parseTracking(first);
   }
 
+  async verify(): Promise<void> {
+    const { status, body } = await this.call('GET', '/trackings?limit=1');
+    if (status >= 400) this.fail(status, body);
+  }
+
   async remove(input: TrackInput): Promise<void> {
     if (!input.providerRef) return;
     await this.call('DELETE', `/trackings/${encodeURIComponent(input.providerRef)}`);

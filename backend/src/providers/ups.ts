@@ -41,6 +41,11 @@ export class UpsProvider implements TrackingProvider {
     return this.refresh(input);
   }
 
+  /** Signing in is enough to prove the client id and secret are accepted. */
+  async verify(): Promise<void> {
+    await this.accessToken();
+  }
+
   async refresh(input: TrackInput): Promise<TrackingResult> {
     if (!this.canTrack(input.trackingNumber)) {
       throw new ProviderError('This does not look like a UPS tracking number', false);

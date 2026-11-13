@@ -66,6 +66,8 @@ export interface TrackingProvider {
   register(input: TrackInput): Promise<TrackingResult>;
   /** Fetch the latest state of an already registered number. */
   refresh(input: TrackInput): Promise<TrackingResult>;
+  /** Cheap check that the credentials work, without consuming quota. Throws a ProviderError if not. */
+  verify?(): Promise<void>;
   /** Stop tracking on the provider side (frees quota). Best effort. */
   remove?(input: TrackInput): Promise<void>;
   webhook?: WebhookHandler;

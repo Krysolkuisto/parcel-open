@@ -119,6 +119,19 @@ export class Track17Provider implements TrackingProvider {
     throw new ProviderError(str(err.message) ?? 'No tracking data returned by 17TRACK', false, Number(err.code));
   }
 
+  /** Asks for the account quota: needs the key, uses none. */
+  async verify(): Promise<void> {
+    const { status, body } = await requestJson(this.fetchImpl, `${BASE_URL}/getquota`, {
+      method: 'POST',
+      headers: { '17token': this.apiKey },
+    });
+    const code = obj(body).code;
+    if (status === 401 || status === 403) throw new ProviderError('17TRACK rejected the API key', false, status);
+    if (status >= 400 || (typeof code === 'number' && code !== 0)) {
+      throw new ProviderError(`17TRACK answered ${String(code ?? status)}`, false);
+    }
+  }
+
   async remove(input: TrackInput): Promise<void> {
     await this.call('/deletetrack', [this.entry(input)]);
   }

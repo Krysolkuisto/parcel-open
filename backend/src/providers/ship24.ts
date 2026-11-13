@@ -41,6 +41,16 @@ export class Ship24Provider implements TrackingProvider {
     return false; // couriers are detected automatically
   }
 
+  /** Listing trackers needs the key but does not use a shipment. */
+  async verify(): Promise<void> {
+    const { status } = await requestJson(this.fetchImpl, `${BASE_URL}/trackers?page=1&limit=1`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
+    if (status === 401) throw new ProviderError('Ship24 rejected the API key', false, status);
+    if (status >= 400) throw new ProviderError(`Ship24 answered HTTP ${status}`, false, status);
+  }
+
   /** Creates the tracker (this is what uses one of the monthly shipments) and returns the first results. */
   async register(input: TrackInput): Promise<TrackingResult> {
     const payload: Json = { trackingNumber: input.trackingNumber };

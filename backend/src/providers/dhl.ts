@@ -68,6 +68,17 @@ export class DhlProvider implements TrackingProvider {
     return this.refresh(input);
   }
 
+  async verify(): Promise<void> {
+    // 200 (data) and 404 (unknown number) both prove the key is accepted.
+    const { status } = await requestJson(
+      this.fetchImpl,
+      `${BASE_URL}?${new URLSearchParams({ trackingNumber: '00340434292135100186' })}`,
+      { method: 'GET', headers: { 'DHL-API-Key': this.apiKey } },
+    );
+    if (status === 401 || status === 403) throw new ProviderError('DHL rejected the API key', false, status);
+    if (status !== 200 && status !== 404) throw new ProviderError(`DHL answered HTTP ${status}`, false, status);
+  }
+
   async refresh(input: TrackInput): Promise<TrackingResult> {
     if (!this.canTrack(input.trackingNumber)) {
       throw new ProviderError('This does not look like a DHL tracking number', false);

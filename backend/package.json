@@ -13,7 +13,9 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --env-file-if-exists=.env dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "set-key": "node scripts/set-key.mjs",
+    "doctor": "tsx --env-file-if-exists=.env src/doctor-cli.ts"
   },
   "dependencies": {
     "fastify": "^5.12.8",
