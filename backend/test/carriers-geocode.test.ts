@@ -51,9 +51,9 @@ describe('tracking links', () => {
     expect(trackingUrl('CP044239925DE')).toContain('dhl.com');
     expect(trackingUrl('6A12345678901')).toContain('laposte.fr');
     // China Post and Amazon have no usable public link: universal page
-    expect(trackingUrl('EE123456789CN')).toBe('https://parcelsapp.com/en/tracking/EE123456789CN');
-    expect(trackingUrl('TBA123456789012')).toBe('https://parcelsapp.com/en/tracking/TBA123456789012');
-    expect(trackingUrl('unknownformat1')).toBe('https://parcelsapp.com/en/tracking/UNKNOWNFORMAT1');
+    expect(trackingUrl('EE123456789CN')).toBe('https://t.17track.net/en#nums=EE123456789CN');
+    expect(trackingUrl('TBA123456789012')).toBe('https://t.17track.net/en#nums=TBA123456789012');
+    expect(trackingUrl('unknownformat1')).toBe('https://t.17track.net/en#nums=UNKNOWNFORMAT1');
   });
 });
 

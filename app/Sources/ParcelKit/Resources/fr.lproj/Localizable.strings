@@ -38,9 +38,7 @@
 
 /* Manual tracking */
 "detail.openTracking" = "Ouvrir sur le site du transporteur";
-"manual.notice" = "Pas de suivi automatique pour ce transporteur: sa page de suivi s'affiche ci-dessous. Pour activer le suivi automatique, ajoutez %@ dans backend/.env, puis redémarrez le backend.";
-"detail.carrierPage" = "Page de suivi du transporteur";
-"detail.reload" = "Recharger";
+"manual.notice" = "Pas de suivi automatique pour ce transporteur. Pour l'activer, ajoutez %@ dans backend/.env, puis redémarrez le backend.";
 
 "manual.short" = "Pas de suivi automatique";
 

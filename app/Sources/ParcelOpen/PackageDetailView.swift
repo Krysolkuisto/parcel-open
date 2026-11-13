@@ -35,15 +35,10 @@ struct PackageDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.secondary.opacity(0.12)))
                 }
-                if package.isManual, let link = package.trackingLink {
-                    // No provider can read this carrier: show its own page here instead of sending the user away.
-                    CarrierPageSection(url: link)
-                } else {
-                    statusBanner
-                    timeline
-                    trackingLinkButton
-                    PackageMap(position: package.position)
-                }
+                statusBanner
+                timeline
+                trackingLinkButton
+                PackageMap(position: package.position)
             }
             .padding(24)
             .frame(maxWidth: 720, alignment: .leading)
