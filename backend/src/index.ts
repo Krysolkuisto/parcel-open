@@ -20,7 +20,15 @@ service.on('statusChanged', ({ package: pkg, previous }) => {
   app.log.info({ id: pkg.id, from: previous, to: pkg.status }, 'package status changed');
 });
 
-if (providers.every((p) => p.name === 'mock')) {
+const cleaned = service.discardUnavailableDemoData();
+if (cleaned > 0) app.log.info({ cleaned }, 'removed leftover demo data from packages');
+
+if (providers.length === 0) {
+  app.log.warn(
+    'No tracking provider configured: packages are kept with a link to follow them by hand. ' +
+      'Add DHL_API_KEY, SHIP24_API_KEY, ... to .env for automatic tracking (see .env.example).',
+  );
+} else if (providers.every((p) => p.name === 'mock')) {
   app.log.warn('No provider API key configured: using the offline mock provider (fake data).');
 }
 

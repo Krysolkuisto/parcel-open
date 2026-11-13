@@ -27,8 +27,17 @@ struct PackageDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.orange.opacity(0.12)))
                 }
+                if package.isManual {
+                    Label(tr("manual.notice"), systemImage: "info.circle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.secondary.opacity(0.12)))
+                }
                 statusBanner
                 timeline
+                trackingLinkButton
                 PackageMap(position: package.position)
             }
             .padding(24)
@@ -100,6 +109,18 @@ struct PackageDetailView: View {
         case let (origin?, nil): return origin
         case let (nil, destination?): return destination
         default: return nil
+        }
+    }
+
+    @ViewBuilder
+    private var trackingLinkButton: some View {
+        if let link = package.trackingLink {
+            Link(destination: link) {
+                Label(tr("detail.openTracking"), systemImage: "arrow.up.right.square")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
     }
 

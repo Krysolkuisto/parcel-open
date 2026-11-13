@@ -28,6 +28,36 @@ const POSTAL_OPERATORS: Record<string, DetectedCarrier> = {
   AU: { code: 'australia-post', name: 'Australia Post' },
   JP: { code: 'japan-post', name: 'Japan Post' },
   SG: { code: 'singapore-post', name: 'Singapore Post' },
+  TH: { code: 'thailand-post', name: 'Thailand Post' },
+  KR: { code: 'korea-post', name: 'Korea Post' },
+  TW: { code: 'taiwan-post', name: 'Chunghwa Post' },
+  IN: { code: 'india-post', name: 'India Post' },
+  BR: { code: 'correios-brazil', name: 'Correios' },
+  RU: { code: 'russian-post', name: 'Russian Post' },
+  TR: { code: 'ptt-posta', name: 'PTT' },
+  PL: { code: 'poczta-polska', name: 'Poczta Polska' },
+  AT: { code: 'austrian-post', name: 'Austrian Post' },
+  PT: { code: 'ctt', name: 'CTT' },
+  IE: { code: 'an-post', name: 'An Post' },
+  NO: { code: 'posten-norge', name: 'Posten Norge' },
+  DK: { code: 'postnord-denmark', name: 'PostNord Denmark' },
+  FI: { code: 'posti', name: 'Posti' },
+  NZ: { code: 'nz-post', name: 'NZ Post' },
+  MY: { code: 'pos-malaysia', name: 'Pos Malaysia' },
+  ID: { code: 'pos-indonesia', name: 'Pos Indonesia' },
+  VN: { code: 'vietnam-post', name: 'Vietnam Post' },
+  PH: { code: 'phlpost', name: 'PHLPost' },
+  AE: { code: 'emirates-post', name: 'Emirates Post' },
+  SA: { code: 'saudi-post', name: 'Saudi Post' },
+  ZA: { code: 'south-africa-post', name: 'South African Post Office' },
+  MX: { code: 'correos-mexico', name: 'Correos de México' },
+  AR: { code: 'correo-argentino', name: 'Correo Argentino' },
+  CL: { code: 'correos-chile', name: 'Correos de Chile' },
+  LU: { code: 'post-luxembourg', name: 'POST Luxembourg' },
+  GR: { code: 'elta', name: 'ELTA' },
+  CZ: { code: 'czech-post', name: 'Česká pošta' },
+  HU: { code: 'magyar-posta', name: 'Magyar Posta' },
+  RO: { code: 'posta-romana', name: 'Poșta Română' },
 };
 
 /**
@@ -86,4 +116,29 @@ export function carrierDisplayName(slug: string): string {
     .split('-')
     .map((w) => (ACRONYMS.has(w) ? w.toUpperCase() : w[0]!.toUpperCase() + w.slice(1)))
     .join(' ');
+}
+
+const UNIVERSAL_LINK = (n: string) => `https://t.17track.net/en#nums=${encodeURIComponent(n)}`;
+
+/**
+ * Public page where a human can follow the parcel: the carrier's own site when it accepts the number in the
+ * URL, otherwise 17TRACK's public page (free, no key). Works whether or not automatic tracking is available.
+ */
+export function trackingUrl(rawNumber: string, carrierCode?: string | null): string {
+  const n = encodeURIComponent(rawNumber.replace(/[\s-]+/g, '').toUpperCase());
+  const code = (carrierCode ?? detectCarrier(rawNumber)?.code ?? '').toLowerCase();
+
+  if (code === 'ups') return `https://www.ups.com/track?tracknum=${n}`;
+  if (code === 'fedex') return `https://www.fedex.com/fedextrack/?trknbr=${n}`;
+  if (code === 'usps') return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${n}`;
+  if (code.startsWith('dhl') || code.startsWith('deutsche-post')) {
+    return `https://www.dhl.com/global-en/home/tracking.html?tracking-id=${n}`;
+  }
+  if (code === 'colissimo' || code === 'la-poste' || code.startsWith('la-poste')) {
+    return `https://www.laposte.fr/outils/suivre-vos-envois?code=${n}`;
+  }
+  if (code === 'royal-mail') return `https://www.royalmail.com/track-your-item#/tracking-results/${n}`;
+  if (code === 'japan-post') return `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${n}&locale=en`;
+  if (code === 'thailand-post') return `https://track.thailandpost.co.th/?trackNumber=${n}`;
+  return UNIVERSAL_LINK(rawNumber.replace(/[\s-]+/g, '').toUpperCase());
 }

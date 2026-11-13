@@ -36,6 +36,10 @@
 "demo.badge" = "DÉMO";
 "demo.notice" = "Données de démonstration : aucune clé d'API de suivi n'est configurée sur votre serveur, ce suivi est donc inventé. Ajoutez une clé 17TRACK ou AfterShip au backend pour suivre de vrais colis.";
 
+/* Manual tracking */
+"detail.openTracking" = "Ouvrir sur le site du transporteur";
+"manual.notice" = "Le suivi automatique n'est pas disponible pour ce transporteur avec votre configuration actuelle. Suivez-le avec le bouton ci-dessous, ou ajoutez une clé de fournisseur de suivi à votre backend.";
+
 /* Toolbar */
 "action.refresh" = "Actualiser";
 "action.add" = "Ajouter un colis";

@@ -131,13 +131,24 @@ describe('service with a carrier-specific provider', () => {
   const add = (app: ReturnType<typeof setup>, trackingNumber: string) =>
     app.inject({ method: 'POST', url: '/v1/packages', headers: { authorization: 'Bearer tok' }, payload: { trackingNumber } });
 
-  it('rejects a number no configured provider can handle, and stores nothing', async () => {
-    const dhl = new DhlProvider('KEY', vi.fn() as unknown as typeof fetch);
+  it('keeps a number no provider can handle as a manual package with a tracking link', async () => {
+    const fetchMock = vi.fn();
+    const dhl = new DhlProvider('KEY', fetchMock as unknown as typeof fetch);
     const app = setup([dhl]);
     const res = await add(app, '1Z14V4W16890664609');
-    expect(res.statusCode).toBe(422);
-    expect(res.json().error.message).toContain('No configured tracking provider');
-    expect((await app.inject({ url: '/v1/packages', headers: { authorization: 'Bearer tok' } })).json().packages).toHaveLength(0);
+    expect(res.statusCode).toBe(201);
+    expect(res.json().package).toMatchObject({
+      provider: 'manual',
+      status: 'unknown',
+      carrierName: 'UPS',
+      trackingUrl: 'https://www.ups.com/track?tracknum=1Z14V4W16890664609',
+    });
+
+    // Refreshing does nothing (and calls nobody) while no provider can handle it.
+    const id = res.json().package.id as string;
+    const refreshed = await app.inject({ method: 'POST', url: `/v1/packages/${id}/refresh`, headers: { authorization: 'Bearer tok' } });
+    expect(refreshed.statusCode).toBe(200);
+    expect(fetchMock).not.toHaveBeenCalled();
     await app.close();
   });
 

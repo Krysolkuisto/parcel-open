@@ -60,6 +60,8 @@ public struct ParcelPackage: Codable, Hashable, Identifiable, Sendable {
     public let carrierName: String?
     /// Tracking provider behind the data. "mock" is fake demo data (no API key configured on the server).
     public let provider: String?
+    /// Public page where the parcel can be followed by hand (carrier website, or 17TRACK).
+    public let trackingUrl: String?
     public let status: PackageStatus
     public let statusText: String?
     public let eta: Date?
@@ -80,19 +82,24 @@ public struct ParcelPackage: Codable, Hashable, Identifiable, Sendable {
     /// True when the server has no real tracking provider: everything shown is made up.
     public var isDemo: Bool { provider == "mock" }
 
+    /// True when no configured provider can follow this parcel automatically.
+    public var isManual: Bool { provider == "manual" }
+
+    public var trackingLink: URL? { trackingUrl.flatMap(URL.init(string:)) }
+
     /// Name shown in lists: the user's description, or the tracking number.
     public var title: String { (label?.isEmpty == false ? label : nil) ?? trackingNumber }
 
     public init(
         id: String, trackingNumber: String, label: String? = nil, description: String? = nil,
-        carrierCode: String? = nil, carrierName: String? = nil, provider: String? = nil, status: PackageStatus,
+        carrierCode: String? = nil, carrierName: String? = nil, provider: String? = nil, trackingUrl: String? = nil, status: PackageStatus,
         statusText: String? = nil, eta: Date? = nil, origin: String? = nil, destination: String? = nil,
         deliveredAt: Date? = nil, archived: Bool = false, lastCheckedAt: Date? = nil, lastError: String? = nil,
         createdAt: Date = Date(), updatedAt: Date = Date(), lastEvent: TrackingEvent? = nil,
         events: [TrackingEvent]? = nil, position: PackagePosition? = nil
     ) {
         self.id = id; self.trackingNumber = trackingNumber; self.label = label; self.description = description
-        self.carrierCode = carrierCode; self.carrierName = carrierName; self.provider = provider; self.status = status
+        self.carrierCode = carrierCode; self.carrierName = carrierName; self.provider = provider; self.trackingUrl = trackingUrl; self.status = status
         self.statusText = statusText; self.eta = eta; self.origin = origin; self.destination = destination
         self.deliveredAt = deliveredAt; self.archived = archived; self.lastCheckedAt = lastCheckedAt
         self.lastError = lastError; self.createdAt = createdAt; self.updatedAt = updatedAt

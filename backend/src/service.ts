@@ -10,7 +10,7 @@ import {
   type TrackingProvider,
   type TrackingResult,
 } from './domain.js';
-import { detectCarrier, type DetectedCarrier } from './carriers.js';
+import { detectCarrier, trackingUrl, type DetectedCarrier } from './carriers.js';
 import { NoGeocoder, type Geocoder } from './geocode.js';
 import type { PackageRow, Store } from './store.js';
 
@@ -21,8 +21,10 @@ export interface PackageView {
   description: string | null;
   carrierCode: string | null;
   carrierName: string | null;
-  /** Which tracking provider supplies the data. "mock" means fake demo data. */
+  /** Which tracking provider supplies the data. "mock" is fake demo data, "manual" means no provider can track it. */
   provider: string;
+  /** Public page to follow the parcel by hand (carrier site, or 17TRACK). */
+  trackingUrl: string;
   status: PackageStatus;
   statusText: string | null;
   eta: string | null;
@@ -93,11 +95,37 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
     private readonly options: { refreshSpacingMs: number; geocoder?: Geocoder } = { refreshSpacingMs: 0 },
   ) {
     super();
-    if (providers.length === 0) throw new Error('At least one tracking provider is required');
   }
 
   providerByName(name: string): TrackingProvider | undefined {
     return this.providers.find((p) => p.name === name);
+  }
+
+  /**
+   * Demo data left over from the mock provider (e.g. before a real key was configured) is dropped:
+   * those packages become plain tracking-link packages again.
+   */
+  discardUnavailableDemoData(): number {
+    if (this.providerByName('mock')) return 0;
+    let cleaned = 0;
+    for (const row of this.store.list(true)) {
+      if (row.provider !== 'mock') continue;
+      this.store.deleteEvents(row.id);
+      this.store.update(row.id, {
+        provider: 'manual',
+        provider_ref: null,
+        status: 'unknown',
+        status_text: null,
+        eta: null,
+        origin: null,
+        destination: null,
+        delivered_at: null,
+        carrier_code: null,
+        carrier_name: detectCarrier(row.tracking_number)?.name ?? null,
+      });
+      cleaned++;
+    }
+    return cleaned;
   }
 
   // ---- queries ------------------------------------------------------------
@@ -164,14 +192,15 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       description: input.description?.trim() || null,
       carrierCode: input.carrierCode?.trim() || null,
       postalCode: input.postalCode?.trim() || null,
-      provider: (this.providers.find((p) => p.canTrack?.(trackingNumber) ?? true) ?? this.providers[0]!).name,
+      provider: this.providers.find((p) => p.canTrack?.(trackingNumber) ?? true)?.name ?? 'manual',
     });
     if (guessed) this.store.update(row.id, { carrier_name: guessed.name });
 
     const candidates = this.providers.filter((p) => p.canTrack?.(trackingNumber) ?? true);
     if (candidates.length === 0) {
-      this.store.delete(row.id);
-      throw new HttpError(422, 'No configured tracking provider can track this number. Add a provider key for its carrier.');
+      // Keep it anyway: the user can follow it through the tracking link, and it is picked up
+      // automatically if a provider able to handle it is configured later.
+      return this.get(row.id);
     }
 
     const errors: ProviderError[] = [];
@@ -248,7 +277,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
     try {
       const active = this.store
         .list(false)
-        .filter((r) => !FINAL_STATUSES.includes(r.status));
+        .filter((r) => !FINAL_STATUSES.includes(r.status) && this.pickProvider(r));
       for (const [i, row] of active.entries()) {
         if (i > 0 && this.options.refreshSpacingMs > 0) await sleep(this.options.refreshSpacingMs);
         try {
@@ -286,16 +315,15 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
   }
 
   /** The package's own provider if still configured, else the first one able to handle its number. */
-  private pickProvider(row: PackageRow): TrackingProvider {
+  private pickProvider(row: PackageRow): TrackingProvider | undefined {
     return (
-      this.providerByName(row.provider) ??
-      this.providers.find((p) => p.canTrack?.(row.tracking_number) ?? true) ??
-      this.providers[0]!
+      this.providerByName(row.provider) ?? this.providers.find((p) => p.canTrack?.(row.tracking_number) ?? true)
     );
   }
 
   private async refreshRow(row: PackageRow): Promise<void> {
     const provider = this.pickProvider(row);
+    if (!provider) return; // nobody can track this number automatically
     try {
       const result = await provider.refresh({
         trackingNumber: row.tracking_number,
@@ -383,6 +411,7 @@ export class TrackingService extends EventEmitter<{ statusChanged: [StatusChange
       carrierCode: row.carrier_code,
       carrierName: row.carrier_name,
       provider: row.provider,
+      trackingUrl: trackingUrl(row.tracking_number, detectCarrier(row.tracking_number)?.code ?? row.carrier_code),
       status: row.status,
       statusText: row.status_text,
       eta: row.eta,

@@ -36,6 +36,10 @@
 "demo.badge" = "DEMO";
 "demo.notice" = "Demo data: no tracking API key is set on your server, so this tracking is made up. Add a 17TRACK or AfterShip key to the backend to follow real parcels.";
 
+/* Manual tracking */
+"detail.openTracking" = "Open on the carrier's site";
+"manual.notice" = "Automatic tracking isn't available for this carrier with your current setup. Follow it with the button below, or add a tracking provider key to your backend.";
+
 /* Toolbar */
 "action.refresh" = "Refresh";
 "action.add" = "Add package";

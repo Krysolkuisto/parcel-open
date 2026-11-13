@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { carrierDisplayName, detectCarrier } from '../src/carriers.js';
+import { carrierDisplayName, detectCarrier, trackingUrl } from '../src/carriers.js';
 import { NominatimGeocoder, queries, type Geocoder } from '../src/geocode.js';
 import { MockProvider } from '../src/providers/mock.js';
 import { buildServer } from '../src/server.js';
@@ -15,6 +15,9 @@ describe('carrier detection', () => {
     ['RR123456789FR', 'La Poste'],
     ['LZ123456789GB', 'Royal Mail'],
     ['EE123456789CN', 'China Post'],
+    ['RB123456789TH', 'Thailand Post'],
+    ['EJ123456789JP', 'Japan Post'],
+    ['CX123456789KR', 'Korea Post'],
     ['CP044239925DE', 'DHL Paket'],
     ['6A12345678901', 'Colissimo'],
     ['JJD0099999999', 'DHL'],
@@ -35,6 +38,22 @@ describe('carrier detection', () => {
     expect(carrierDisplayName('usps')).toBe('USPS');
     expect(carrierDisplayName('la-poste-colissimo')).toBe('Colissimo');
     expect(carrierDisplayName('some-new-carrier')).toBe('Some New Carrier');
+    expect(carrierDisplayName('thailand-post')).toBe('Thailand Post');
+    expect(carrierDisplayName('deutsche-post-dhl')).toBe('Deutsche Post DHL');
+  });
+});
+
+describe('tracking links', () => {
+  it('links to the carrier site when it accepts the number, else to 17TRACK', () => {
+    expect(trackingUrl('1Z14V4W16890664609')).toBe('https://www.ups.com/track?tracknum=1Z14V4W16890664609');
+    expect(trackingUrl('rb123456789th')).toBe('https://track.thailandpost.co.th/?trackNumber=RB123456789TH');
+    expect(trackingUrl('EJ123456789JP')).toContain('japanpost.jp');
+    expect(trackingUrl('CP044239925DE')).toContain('dhl.com');
+    expect(trackingUrl('6A12345678901')).toContain('laposte.fr');
+    // China Post and Amazon have no usable public link: universal page
+    expect(trackingUrl('EE123456789CN')).toBe('https://t.17track.net/en#nums=EE123456789CN');
+    expect(trackingUrl('TBA123456789012')).toBe('https://t.17track.net/en#nums=TBA123456789012');
+    expect(trackingUrl('unknownformat1')).toBe('https://t.17track.net/en#nums=UNKNOWNFORMAT1');
   });
 });
 

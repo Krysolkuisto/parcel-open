@@ -6,6 +6,7 @@ export interface Config {
   track17Key: string | null;
   aftershipKey: string | null;
   dhlKey: string | null;
+  ship24Key: string | null;
   aftershipWebhookSecret: string | null;
   /** Provider names in priority order. */
   providers: string[];
@@ -27,16 +28,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const track17Key = env.TRACK17_API_KEY?.trim() || null;
   const aftershipKey = env.AFTERSHIP_API_KEY?.trim() || null;
   const dhlKey = env.DHL_API_KEY?.trim() || null;
+  const ship24Key = env.SHIP24_API_KEY?.trim() || null;
 
   let providers = (env.PROVIDERS ?? '')
     .split(',')
     .map((p) => p.trim().toLowerCase())
     .filter(Boolean);
   if (providers.length === 0) {
+    // Free carrier-specific APIs first so they do not use up an aggregator's quota.
+    if (dhlKey) providers.push('dhl');
     if (track17Key) providers.push('17track');
     if (aftershipKey) providers.push('aftership');
-    if (dhlKey) providers.push('dhl');
-    if (providers.length === 0) providers = ['mock'];
+    if (ship24Key) providers.push('ship24');
   }
 
   const apiToken = env.API_TOKEN?.trim();
@@ -52,6 +55,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     track17Key,
     aftershipKey,
     dhlKey,
+    ship24Key,
     aftershipWebhookSecret: env.AFTERSHIP_WEBHOOK_SECRET?.trim() || null,
     providers,
     pollIntervalMinutes: num(env.POLL_INTERVAL_MINUTES, 30),
