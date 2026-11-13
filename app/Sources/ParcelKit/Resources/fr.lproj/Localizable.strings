@@ -40,6 +40,8 @@
 "detail.openTracking" = "Ouvrir sur le site du transporteur";
 "manual.notice" = "Pas de suivi automatique pour ce transporteur. Pour l'activer, ajoutez %@ dans backend/.env, puis redémarrez le backend.";
 
+"manual.short" = "Pas de suivi automatique";
+
 /* Toolbar */
 "action.refresh" = "Actualiser";
 "action.add" = "Ajouter un colis";

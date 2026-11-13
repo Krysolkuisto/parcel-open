@@ -29,7 +29,7 @@ struct PackageRow: View {
                             .foregroundStyle(isSelected ? Color.white : Color.orange)
                     }
                 }
-                Text(package.statusText ?? package.status.title)
+                Text(package.isManual ? tr("manual.short") : (package.statusText ?? package.status.title))
                     .font(.subheadline)
                     .foregroundStyle(secondary)
                     .lineLimit(1)

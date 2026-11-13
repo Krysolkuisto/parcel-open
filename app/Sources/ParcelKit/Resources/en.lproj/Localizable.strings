@@ -40,6 +40,8 @@
 "detail.openTracking" = "Open on the carrier's site";
 "manual.notice" = "No automatic tracking for this carrier yet. To enable it, add %@ to backend/.env, then restart the backend.";
 
+"manual.short" = "No automatic tracking";
+
 /* Toolbar */
 "action.refresh" = "Refresh";
 "action.add" = "Add package";
