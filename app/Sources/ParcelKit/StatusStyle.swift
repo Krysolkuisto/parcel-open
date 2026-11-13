@@ -40,19 +40,19 @@ extension PackageStatus {
 public enum ParcelFormat {
     /// "Today, 1:55 PM" / "Aujourd'hui, 13:55" — relative day plus time.
     public static func dateTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.doesRelativeDateFormatting = true
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
+        let time = DateFormatter()
+        time.dateStyle = .none
+        time.timeStyle = .short
+        return "\(day(date)), \(time.string(from: date))"
     }
 
-    /// "Today", "Tomorrow", or a short date.
+    /// "Today", "Tomorrow", or a short date, with a capital first letter.
     public static func day(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.doesRelativeDateFormatting = true
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        return formatter.string(from: date)
+        let text = formatter.string(from: date)
+        return text.prefix(1).localizedUppercase + text.dropFirst()
     }
 }

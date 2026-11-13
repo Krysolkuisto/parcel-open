@@ -49,21 +49,38 @@ struct ContentView: View {
 struct PackageList: View {
     @Environment(AppModel.self) private var model
 
+    private func row(_ package: ParcelPackage) -> some View {
+        PackageRow(package: package, isSelected: model.selection == package.id)
+            .tag(package.id)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .contextMenu {
+                Button { Task { await model.refreshOne(package) } } label: {
+                    Label(tr("action.refresh"), systemImage: "arrow.clockwise")
+                }
+                Button { Task { await model.setArchived(package, !package.archived) } } label: {
+                    Label(package.archived ? tr("action.unarchive") : tr("action.archive"),
+                          systemImage: package.archived ? "arrow.uturn.backward" : "archivebox")
+                }
+            }
+    }
+
     var body: some View {
         @Bindable var model = model
 
         List(selection: $model.selection) {
             if !model.activePackages.isEmpty {
                 Section {
-                    ForEach(model.activePackages) { PackageRow(package: $0).tag($0.id) }
+                    ForEach(model.activePackages) { row($0) }
                 }
             }
             if !model.deliveredPackages.isEmpty {
                 Section(tr("list.section.delivered")) {
-                    ForEach(model.deliveredPackages) { PackageRow(package: $0).tag($0.id) }
+                    ForEach(model.deliveredPackages) { row($0) }
                 }
             }
         }
+        .listStyle(.plain)
         .overlay {
             if model.packages.isEmpty && !model.isRefreshing {
                 ContentUnavailableView(

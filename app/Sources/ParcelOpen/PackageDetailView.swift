@@ -67,7 +67,7 @@ struct PackageDetailView: View {
             Image(systemName: package.status.symbol)
                 .foregroundStyle(package.status.color)
             VStack(alignment: .leading, spacing: 2) {
-                Text(package.statusText ?? package.status.title).font(.headline)
+                Text(package.status.title).font(.headline)
                 if package.status.isActive, let eta = package.eta {
                     Text("\(tr("detail.eta")): \(ParcelFormat.day(eta))")
                         .font(.subheadline)
@@ -128,10 +128,6 @@ struct PackageDetailView: View {
                 Label(package.archived ? tr("action.unarchive") : tr("action.archive"),
                       systemImage: package.archived ? "arrow.uturn.backward" : "checkmark")
             }
-            Button { Task { await model.refreshOne(package) } } label: {
-                Label(tr("action.refresh"), systemImage: "arrow.clockwise")
-            }
-            .disabled(model.isRefreshing)
             ShareLink(item: package.trackingNumber) { Label(tr("action.share"), systemImage: "square.and.arrow.up") }
         }
     }

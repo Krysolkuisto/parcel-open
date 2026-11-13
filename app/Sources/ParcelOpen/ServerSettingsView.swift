@@ -21,57 +21,63 @@ struct ServerSettingsView: View {
     private var draft: ServerConfig { ServerConfig(url: url, token: token) }
 
     var body: some View {
-        Form {
-            Section {
-                TextField(tr("settings.url"), text: $url, prompt: Text("http://127.0.0.1:8787"))
-                    .autocorrectionDisabled()
-                    #if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.URL)
-                    #endif
-                SecureField(tr("settings.token"), text: $token)
-                    .autocorrectionDisabled()
-            } footer: {
-                Text(tr("settings.hint"))
-            }
-
-            Section {
-                Button(tr("settings.test")) { Task { await test() } }
-                    .disabled(!draft.isValid || isTesting)
-                switch testResult {
-                case .success:
-                    Label(tr("settings.connected"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                case .failure(let message):
-                    Label(message, systemImage: "xmark.octagon.fill").foregroundStyle(.red)
-                case nil:
-                    EmptyView()
+        VStack(spacing: 0) {
+            Form {
+                Section {
+                    TextField(tr("settings.url"), text: $url, prompt: Text("http://127.0.0.1:8787"))
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        #endif
+                    SecureField(tr("settings.token"), text: $token)
+                        .autocorrectionDisabled()
+                    HStack {
+                        Button(tr("settings.test")) { Task { await test() } }
+                            .disabled(!draft.isValid || isTesting)
+                        if isTesting { ProgressView().controlSize(.small) }
+                        switch testResult {
+                        case .success:
+                            Label(tr("settings.connected"), systemImage: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        case .failure(let message):
+                            Label(message, systemImage: "xmark.octagon.fill").foregroundStyle(.red)
+                        case nil:
+                            EmptyView()
+                        }
+                    }
+                } footer: {
+                    Text(tr("settings.hint"))
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .formStyle(.grouped)
 
-            Section {
-                HStack {
-                    if let onClose {
-                        Button(tr("action.cancel"), role: .cancel) { onClose() }
-                    }
-                    Spacer()
-                    Button(tr("action.save")) {
-                        model.saveConfig(draft)
-                        onClose?()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!draft.isValid)
-                    .keyboardShortcut(.defaultAction)
+            Divider()
+            HStack {
+                if let onClose {
+                    Button(tr("action.cancel"), role: .cancel) { onClose() }
+                        .keyboardShortcut(.cancelAction)
                 }
+                Spacer()
+                Button(tr("action.save")) {
+                    model.saveConfig(draft)
+                    onClose?()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!draft.isValid)
+                .keyboardShortcut(.defaultAction)
             }
+            .padding(16)
         }
-        .formStyle(.grouped)
         .navigationTitle(tr("settings.title"))
         .onAppear {
             url = model.config?.url ?? "http://127.0.0.1:8787"
             token = model.config?.token ?? ""
         }
         #if os(macOS)
-        .frame(minWidth: 440)
+        .frame(minWidth: 440, minHeight: 320)
         #endif
     }
 

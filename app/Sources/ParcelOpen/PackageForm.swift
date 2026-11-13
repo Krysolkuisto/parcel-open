@@ -46,6 +46,7 @@ struct PackageForm: View {
                         .foregroundStyle(.secondary)
                 } else {
                     TextField("", text: $reference, prompt: Text(tr("form.required")))
+                        .textFieldStyle(.plain)
                         .focused($focus, equals: .reference)
                         .autocorrectionDisabled()
                         #if os(iOS)
@@ -64,6 +65,7 @@ struct PackageForm: View {
             Divider()
             row(tr("form.description")) {
                 TextField("", text: $description, prompt: Text(tr("form.optional")))
+                    .textFieldStyle(.plain)
                     .focused($focus, equals: .description)
                     .onSubmit { Task { await submit() } }
             }
